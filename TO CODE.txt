@@ -1,0 +1,3 @@
+Graph emergence values without dragonfly 
+graph emergence of just ponds 1 and 12, 2022 vs 2023
+percent contribution of ponds which produce nemo 
