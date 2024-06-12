@@ -24,7 +24,7 @@ AllOtherDW <- subset(EMERGE, ID %in% c("Antisoptera","nigriculus", "Midges","Cer
 NoNemoDW <- sum(AllOtherDW$SampleDW)
 NoNemoDW
 
-# Dragonflies are over represented (It thinks they weigh 2000 mg) correct this 
+# Dragonflies are over represented mass wise 
 ```
 
 
