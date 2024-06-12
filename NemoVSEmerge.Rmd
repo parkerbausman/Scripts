@@ -1,0 +1,110 @@
+---
+title: "Untitled"
+author: "Parker Bausman"
+date: "2024-06-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+```
+
+```{r}
+view(AllOtherDW)
+```
+
+```{r}
+#create a df of all other DW without nemo 
+NoNemoDry <- AllOtherDW
+NoNemoDry <- subset(NoNemoDry, !grepl("hostilis", ID))
+```
+
+
+```{r}
+#find the sum of dw per date (sans nemo)
+dwDate <- aggregate(NoNemoDry$SampleDW ~ NoNemoDry$Date, data = NoNemoDry, FUN= sum)
+```
+
+```{r}
+nemosplit <- read.csv("C:/Users/Parke/OneDrive/Documents/MS Thesis/Data/nemoemergence.csv" , header = TRUE)
+
+
+
+# Reshape the data into long format
+LongEmerge <- pivot_longer(nemosplit, cols = starts_with("nemo"), names_to = "Year", values_to = "Nemo_Count")
+
+LongEmerge$Date <- as.Date(LongEmerge$Date, format = "%d-%b-%Y")
+
+# Extract month and day from the date
+LongEmerge$Month <- format(LongEmerge$Date, "%m")
+LongEmerge$Day <- format(LongEmerge$Date, "%d")
+
+#get nemo dw per m2 
+LongEmerge <- LongEmerge %>%
+  mutate((Nemo_Count * (57.895836743))/10.836) 
+
+
+LongEmerge$NemoM2 <- LongEmerge$`(Nemo_Count * (57.895836743))/10.836`
+LongEmerge$`(Nemo_Count * (57.895836743))/10.836` <- NULL
+```
+
+```{r}
+#pull in and shift the total dry biomass per m2 to longer
+otherbugs <- read.csv("C:/Users/Parke/OneDrive/Documents/MS Thesis/Data/AllOtherM2.csv" , header = TRUE)
+
+
+
+# Reshape the data into long format
+otherbugs <- pivot_longer(otherbugs, cols = starts_with("Other"), names_to = "Year", values_to = "DryWeightM2")
+
+otherbugs$Date <- as.Date(otherbugs$Date, format = "%d-%b-%Y")
+
+# Extract month and day from the date
+otherbugs$Month <- format(otherbugs$Date, "%m")
+otherbugs$Day <- format(otherbugs$Date, "%d")
+
+
+```
+
+```{r}
+#Im going to remove the column with other bugs total (not per m2)
+otherbugs1 <- subset(otherbugs, !grepl("Meter2", Year))
+otherbugs1$Date <- NULL
+#same for nemo22
+LongEmerge1 <- subset(LongEmerge, !grepl("22", Year))
+LongEmerge1$Nemo_Count <- NULL 
+LongEmerge1$Date <- NULL 
+
+```
+
+
+```{r}
+#to graph nemo m2 vs other m2, merge the columns 
+
+NemoVsOther <- merge(LongEmerge1, otherbugs1, by = "Day")
+
+# now remove cols I dont need so my brain can function 
+
+NemoVsOther <- NemoVsOther[,c(-2,-5,-7)]
+
+#NemoVsOther <- na.omit(NemoVsOther)
+```
+
+
+```{r}
+custom_breaks <- c("07-05", "07-12","07-19","07-26","08-02","08-09","08-14")
+
+# Plot
+ggplot(NemoVsOther, aes(x = (paste(Month.x, Day, sep = "-")), color = "Variable")) +
+  geom_point(aes(y = DryWeightM2), color = "blue") +
+  geom_point(aes(y = NemoM2), color = "red") +
+  labs(x = "Date", y = "Mass", color = "Variable") +
+  theme_minimal()+
+  scale_x_discrete(breaks = custom_breaks)
+```

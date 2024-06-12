@@ -1,0 +1,61 @@
+---
+title: "Midges Over Time"
+author: "Parker Bausman"
+date: "2024-05-28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(readr)
+library(dplyr)
+library(anytime)
+library(tidyverse)
+library(lubridate)
+```
+
+```{r}
+Midges<- Float2023[grepl("Midges", Float2023$ID), ]
+Cerato<- Float2023[grepl("Ceratopogonidae", Float2023$ID), ]
+```
+
+```{r}
+Midges$Date <- as.Date(Midges$Date, format = "%d-%b-%Y")
+```
+
+```{r}
+sum_per_date <- Midges %>%
+  group_by(Midges$Date) %>%
+  summarise(total_observation = sum(Count))
+```
+
+
+```{r}
+plot(sum_per_date$`Midges$Date`,sum_per_date$total_observation)
+```
+
+```{r}
+Nemo<- Float2023[grepl("hostilis", Float2023$ID), ]
+
+Nemo$Date <- as.Date(Nemo$Date, format = "%d-%b-%Y")
+
+nemosum <- Nemo %>%
+  group_by(Nemo$Date) %>%
+  summarise(total_observation = sum(Count))
+
+plot(nemosum$`Nemo$Date`,nemosum$total_observation)
+```
+
+
+```{r}
+mosq<- Float2023[grepl("Mosquito", Float2023$ID), ]
+
+mosq$Date <- as.Date(Nemo$Date, format = "%d-%b-%Y")
+
+mosqsum <- mosq %>%
+  group_by(mosq$Date) %>%
+  summarise(total_observation = sum(Count))
+```

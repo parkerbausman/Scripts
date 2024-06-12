@@ -1,0 +1,46 @@
+---
+title: "LW Drymass"
+author: "Parker Bausman"
+date: "2024-05-30"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#read in LW data 
+lw<-read.csv("C:/Users/Parke/OneDrive/Documents/MS Thesis/Data/LW-Float.csv",header=TRUE)
+head(lw)
+```
+
+
+
+```{r}
+#merge float data and LW data 
+merge <- merge(subsetFloat, lw, by="ID", all=T)
+EMERGE <- merge
+```
+
+```{r}
+# calculating log (dry weight) from length
+EMERGE$logDW <- with(EMERGE, a + (b * log((Length), base=base)))
+
+#untransforming log (dry weight) to dry weight (mg)
+EMERGE$DW <- with(EMERGE, (base^(logDW)))
+```
+
+```{r}
+#now multiply dry weight by number of individuals 
+EMERGE$SampleDW <- NA
+
+EMERGE$SampleDW <- (EMERGE$DW * EMERGE$Count)
+```
+
+```{r}
+value_counts <- table(EMERGE$Count)
+values_appear_once <- names(value_counts[value_counts == 1])
+print(values_appear_once)
+```
+
