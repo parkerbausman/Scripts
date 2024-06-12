@@ -76,10 +76,21 @@ otherbugs$Day <- format(otherbugs$Date, "%d")
 #Im going to remove the column with other bugs total (not per m2)
 otherbugs1 <- subset(otherbugs, !grepl("Meter2", Year))
 otherbugs1$Date <- NULL
+otherbugs1 <- na.omit(otherbugs1)
+
+#add a col which is month + day, the issue is when merging by just day or month you get dupes
+otherbugs1$monthday <- NA
+otherbugs1$monthday <- paste(otherbugs1$Month, otherbugs1$Day, sep = "-")
+
 #same for nemo22
 LongEmerge1 <- subset(LongEmerge, !grepl("22", Year))
 LongEmerge1$Nemo_Count <- NULL 
-LongEmerge1$Date <- NULL 
+LongEmerge1$Date <- NULL
+LongEmerge1 <- na.omit(LongEmerge1)
+
+LongEmerge1$monthday <- NA
+LongEmerge1$monthday <- paste(LongEmerge1$Month, LongEmerge1$Day, sep = "-")
+
 
 ```
 
@@ -87,11 +98,11 @@ LongEmerge1$Date <- NULL
 ```{r}
 #to graph nemo m2 vs other m2, merge the columns 
 
-NemoVsOther <- merge(LongEmerge1, otherbugs1, by = "Day")
+NemoVsOther <- merge(LongEmerge1, otherbugs1, by = "monthday")
 
 # now remove cols I dont need so my brain can function 
 
-NemoVsOther <- NemoVsOther[,c(-2,-5,-7)]
+#NemoVsOther <- NemoVsOther[,c(-2,-5,-7)]
 
 #NemoVsOther <- na.omit(NemoVsOther)
 ```
@@ -101,10 +112,10 @@ NemoVsOther <- NemoVsOther[,c(-2,-5,-7)]
 custom_breaks <- c("07-05", "07-12","07-19","07-26","08-02","08-09","08-14")
 
 # Plot
-ggplot(NemoVsOther, aes(x = (paste(Month.x, Day, sep = "-")), color = "Variable")) +
-  geom_point(aes(y = DryWeightM2), color = "blue") +
-  geom_point(aes(y = NemoM2), color = "red") +
-  labs(x = "Date", y = "Mass", color = "Variable") +
+ggplot(NemoVsOther, aes(x = (paste(Month.x, Day.x, sep = "-")), color = "Variable")) +
+  geom_point(aes(y = DryWeightM2), color = "blue", size = 2) +
+  geom_point(aes(y = NemoM2), color = "red", size = 2) +
+  labs(x = "Month-Day", y = "Mass") +
   theme_minimal()+
   scale_x_discrete(breaks = custom_breaks)
 ```
