@@ -1,0 +1,32 @@
+---
+title: "Nemo_Other_DW"
+author: "Parker Bausman"
+date: "2024-05-30"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+EMERGE$Date <- as.Date(EMERGE$Date, format = "%d-%b-%Y")
+```
+
+```{r}
+#pull out nemo
+NemoDW <- subset(EMERGE, ID %in% c("hostilis"))
+TotalNemo <- sum(NemoDW$SampleDW)
+TotalNemo
+```
+```{r}
+AllOtherDW <- subset(EMERGE, ID %in% c("Antisoptera","nigriculus", "Midges","Ceratopogonidae","Diptera", "Mosquito"))
+NoNemoDW <- sum(AllOtherDW$SampleDW)
+NoNemoDW
+
+# Dragonflies are over represented (It thinks they weigh 2000 mg) correct this 
+```
+
+
+
+
