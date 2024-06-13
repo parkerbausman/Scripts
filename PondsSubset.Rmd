@@ -1,0 +1,26 @@
+---
+title: "PondSubset"
+author: "Parker Bausman"
+date: "2024-06-13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#I want to look at emergence just based on certain ponds (ignoring ponds which have no nemo)
+
+#in 2023 ponds 5,9, and 12 had nemo. Lets start with 12 as it had the most in 2022
+
+```{r}
+#take the dataset of just nemo and pull out a pond (in this case, pond 12)
+Pond12Nemo <- subset(NemoDW, grepl("12", Pond))
+```
+
+```{r}
+#Pond 12 samples of all other 
+Pond12Other <- subset(NoNemoDry, grepl("12", Pond))
+```
+
+
