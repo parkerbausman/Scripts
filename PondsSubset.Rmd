@@ -23,4 +23,13 @@ Pond12Nemo <- subset(NemoDW, grepl("12", Pond))
 Pond12Other <- subset(NoNemoDry, grepl("12", Pond))
 ```
 
+```{r}
+#find the sum of dry weight per date (Nemo) 
+Pond12NemoDate <- aggregate(Pond12Nemo$SampleDW ~ Pond12Nemo$Date, data = Pond12Nemo, FUN= sum)
+```
+
+```{r}
+#find the sum of dry weight per date (all other)
+Pond12OtherDate <- aggregate(Pond12Other$SampleDW ~ Pond12Other$Date, data = Pond12Other, FUN= sum)
+```
 
