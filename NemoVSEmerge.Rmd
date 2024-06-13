@@ -16,7 +16,7 @@ library(tidyverse)
 ```
 
 ```{r}
-view(AllOtherDW)
+AllOtherDW <- subset(EMERGE, )
 ```
 
 ```{r}
