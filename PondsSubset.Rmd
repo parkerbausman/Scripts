@@ -9,9 +9,18 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
 #I want to look at emergence just based on certain ponds (ignoring ponds which have no nemo)
 
 #in 2023 ponds 5,9, and 12 had nemo. Lets start with 12 as it had the most in 2022
+
+#10.836 meters sampled per week
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+```
 
 ```{r}
 #take the dataset of just nemo and pull out a pond (in this case, pond 12)
@@ -31,5 +40,30 @@ Pond12NemoDate <- aggregate(Pond12Nemo$SampleDW ~ Pond12Nemo$Date, data = Pond12
 ```{r}
 #find the sum of dry weight per date (all other)
 Pond12OtherDate <- aggregate(Pond12Other$SampleDW ~ Pond12Other$Date, data = Pond12Other, FUN= sum)
+```
+
+```{r}
+#pull in and shift the total dry biomass per m2 to longer
+p12mg <- read.csv("C:/Users/Parke/OneDrive/Documents/MS Thesis/Data/Pond12mgM2.csv" , header = TRUE)
+
+p12mg$Date <- as.Date(p12mg$Date, format = "%d-%b-%Y")
+
+# Extract month and day from the date
+p12mg$Month <- format(p12mg$Date, "%m")
+p12mg$Day <- format(p12mg$Date, "%d")
+
+```
+
+
+```{r}
+custom_breaks <- c("07-05", "07-12","07-19","07-26","08-02","08-09","08-14")
+
+# Plot
+ggplot(p12mg, aes(x = (paste(Month, Day, sep = "-")), color = "Variable")) +
+  geom_point(aes(y = M2OtherDW12), color = "blue", size = 2) +
+  geom_point(aes(y = M2NemoDW12), color = "red", size = 2) +
+  labs(x = "Month-Day", y = "Mass") +
+  theme_minimal()+
+  scale_x_discrete(breaks = custom_breaks)
 ```
 
