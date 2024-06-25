@@ -20,7 +20,7 @@ TotalNemo <- sum(NemoDW$SampleDW)
 TotalNemo
 ```
 ```{r}
-AllOtherDW <- subset(EMERGE, ID %in% c("Antisoptera","nigriculus", "Midges","Ceratopogonidae","Diptera", "Mosquito", "Zygoptera"))
+AllOtherDW <- subset(EMERGE, ID %in% c("Antisoptera","nigriculus", "Midges","Ceratopogonidae","Diptera", "Mosquito", "Zygoptera", "externus"))
 NoNemoDW <- sum(AllOtherDW$SampleDW)
 NoNemoDW
 
