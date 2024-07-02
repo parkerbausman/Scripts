@@ -59,7 +59,8 @@ for (i in 1:nrow(Float2022)) {
   if (Float2022$ID[i] == "Antisoptera") {
     # If ID is antisoptera, add length
     #units is mm
-    Float2022$Length [i] <- 70.000
+    Float2022$Length [i] <- 59.000
+    #measure more dragonflies
   } else if (Float2022$ID[i] == "nigriculus") {
     # etc..
      Float2022$Length [i] <- 14.1212222222222
@@ -68,9 +69,13 @@ for (i in 1:nrow(Float2022)) {
     # etc..
      Float2022$Length [i] <- 17.74
      
- # } else if (Float2022$ID[i] == "Midges") {
+  } else if (Float2022$ID[i] == "Zygoptera") {
     # etc..
-     Float2022$Length [i] <- .345853
+     Float2022$Length [i] <- 33
+     
+  } else if (Float2022$ID[i] == "Midges") {
+    # etc..
+     Float2022$Length [i] <- 3.45853
      
   } else if (Float2022$ID[i] == "Ceratopogonidae") {
     # etc..
@@ -94,5 +99,44 @@ for (i in 1:nrow(Float2022)) {
 
 
 ```{r}
-subsetFloat2022 <- subset(Float2023, ID %in% c("Antisoptera","nigriculus", "hostilis", "Midges","Ceratopogonidae","Diptera", "Mosquito"))
+subsetFloat2022 <- subset(Float2022, ID %in% c("Antisoptera","nigriculus", "hostilis", "Midges","Ceratopogonidae","Diptera", "Mosquito", "Zygoptera", "externus"))
 ```
+
+#now the LW-Dry-Mass 
+
+
+```{r}
+#read in LW data 
+lw<-read.csv("C:/Users/Parke/OneDrive/Documents/MS Thesis/Data/LW-Float.csv",header=TRUE)
+head(lw)
+```
+
+
+
+```{r}
+#merge float data and LW data 
+merge <- merge(subsetFloat2022, lw, by="ID", all=T)
+EMERGE2022 <- merge
+```
+
+```{r}
+# calculating log (dry weight) from length
+EMERGE2022$logDW <- with(EMERGE2022, a + (b * log((Length), base=base)))
+
+#untransforming log (dry weight) to dry weight (mg)
+EMERGE2022$DW <- with(EMERGE2022, (base^(logDW)))
+```
+
+```{r}
+#now multiply dry weight by number of individuals 
+EMERGE2022$SampleDW <- NA
+
+EMERGE2022$SampleDW <- (EMERGE2022$DW * EMERGE2022$Count)
+```
+
+```{r}
+value_counts <- table(EMERGE2022$Count)
+values_appear_once <- names(value_counts[value_counts == 1])
+print(values_appear_once)
+```
+

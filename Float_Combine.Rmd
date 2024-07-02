@@ -73,7 +73,7 @@ for (i in 1:nrow(Float2023)) {
      
   } else if (Float2023$ID[i] == "Midges") {
     # etc..
-     Float2023$Length [i] <- .345853
+     Float2023$Length [i] <- 3.45853
      
   } else if (Float2023$ID[i] == "Ceratopogonidae") {
     # etc..
