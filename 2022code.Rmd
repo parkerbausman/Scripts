@@ -179,15 +179,8 @@ NemoDWM2 <- read.csv("C:/Users/Parke/OneDrive/Documents/MS Thesis/Data/Nemo-22-2
 
 NemoDWM2$Date <- as.Date(NemoDWM2$Date, format = "%d-%b")
 
-ggplot(NemoDWM2, aes(x = Date)) +
-  geom_point(aes(y = NemoM2022), color = "blue", size = 2) +
-  geom_point(aes(y = NemoM2023), color = "red", size = 2) +
-  geom_line(aes(y = NemoM2022), color = "blue", size = .5) +  # Connect NemoM2022 points
-  geom_line(aes(y = NemoM2023), color = "red", size = .5) +    # Connect NemoM2023 points
-  labs(x = "Date", y = "Nemo Emergence g/m2") +
-  theme_minimal()
-
 ```
+
 ```{r}
 ggplot(NemoDWM2, aes(x = Date)) +
   geom_point(aes(y = NemoM2022, color = "NemoM2022"), size = 2) +
@@ -209,104 +202,27 @@ AllOtherDW <- subset(EMERGE2022, )
 
 ```{r}
 #create a df of all other DW without nemo 
-NoNemoDry22 <- AllOtherDW
-NoNemoDry22 <- subset(NoNemoDry, !grepl("hostilis", ID))
+NoNemoDry23 <- AllOtherDW
+NoNemoDry23 <- subset(NoNemoDry23, !grepl("hostilis", ID))
+
+NoNemoDry22 <- DW2022
+NoNemoDry22 <- subset(NoNemoDry22, !grepl("hostilis", ID))
+
 ```
+
+```{r}
+#mg per sample date sans nemo 
+OtherDWDate22 <- aggregate(NoNemoDry22$SampleDW ~ NoNemoDry22$Date, data = NoNemoDry22, FUN= sum)
+OtherDWDate23 <- aggregate(NoNemoDry23$SampleDW ~ NoNemoDry23$Date, data = NoNemoDry23, FUN= sum)
+
+```
+
 
 
 ```{r}
 #find the sum of dw per date (sans nemo)
 dwDate22 <- aggregate(NoNemoDry22$SampleDW ~ NoNemoDry22$Date, data = NoNemoDry22, FUN= sum)
 
-
-
-```
-
-```{r}
-nemosplit <- read.csv("C:/Users/Parke/OneDrive/Documents/MS Thesis/Data/nemoemergence.csv" , header = TRUE)
-
-
-
-# Reshape the data into long format
-LongEmerge <- pivot_longer(nemosplit, cols = starts_with("nemo"), names_to = "Year", values_to = "Nemo_Count")
-
-LongEmerge$Date <- as.Date(LongEmerge$Date, format = "%d-%b-%Y")
-
-# Extract month and day from the date
-LongEmerge$Month <- format(LongEmerge$Date, "%m")
-LongEmerge$Day <- format(LongEmerge$Date, "%d")
-
-#get nemo dw per m2 
-LongEmerge <- LongEmerge %>%
-  mutate((Nemo_Count * (57.895836743))/10.836) 
-
-
-LongEmerge$NemoM2 <- LongEmerge$`(Nemo_Count * (57.895836743))/10.836`
-LongEmerge$`(Nemo_Count * (57.895836743))/10.836` <- NULL
-```
-
-```{r}
-#pull in and shift the total dry biomass per m2 to longer
-otherbugs <- read.csv("C:/Users/Parke/OneDrive/Documents/MS Thesis/Data/AllOtherM2.csv" , header = TRUE)
-
-
-
-# Reshape the data into long format
-otherbugs <- pivot_longer(otherbugs, cols = starts_with("Other"), names_to = "Year", values_to = "DryWeightM2")
-
-otherbugs$Date <- as.Date(otherbugs$Date, format = "%d-%b-%Y")
-
-# Extract month and day from the date
-otherbugs$Month <- format(otherbugs$Date, "%m")
-otherbugs$Day <- format(otherbugs$Date, "%d")
-
-
-```
-
-```{r}
-#Im going to remove the column with other bugs total (not per m2)
-otherbugs1 <- subset(otherbugs, !grepl("Meter2", Year))
-otherbugs1$Date <- NULL
-otherbugs1 <- na.omit(otherbugs1)
-
-#add a col which is month + day, the issue is when merging by just day or month you get dupes
-otherbugs1$monthday <- NA
-otherbugs1$monthday <- paste(otherbugs1$Month, otherbugs1$Day, sep = "-")
-
-#same for nemo22
-LongEmerge1 <- subset(LongEmerge, !grepl("22", Year))
-LongEmerge1$Nemo_Count <- NULL 
-LongEmerge1$Date <- NULL
-LongEmerge1 <- na.omit(LongEmerge1)
-
-LongEmerge1$monthday <- NA
-LongEmerge1$monthday <- paste(LongEmerge1$Month, LongEmerge1$Day, sep = "-")
-
-
 ```
 
 
-```{r}
-#to graph nemo m2 vs other m2, merge the columns 
-
-NemoVsOther <- merge(LongEmerge1, otherbugs1, by = "monthday")
-
-# now remove cols I dont need so my brain can function 
-
-#NemoVsOther <- NemoVsOther[,c(-2,-5,-7)]
-
-#NemoVsOther <- na.omit(NemoVsOther)
-```
-
-
-```{r}
-custom_breaks <- c("07-05", "07-12","07-19","07-26","08-02","08-09","08-14")
-
-# Plot
-ggplot(NemoVsOther, aes(x = (paste(Month.x, Day.x, sep = "-")), color = "Variable")) +
-  geom_point(aes(y = DryWeightM2), color = "blue", size = 2) +
-  geom_point(aes(y = NemoM2), color = "red", size = 2) +
-  labs(x = "Month-Day", y = "Mass") +
-  theme_minimal()+
-  scale_x_discrete(breaks = custom_breaks)
-```
