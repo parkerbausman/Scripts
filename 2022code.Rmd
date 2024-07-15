@@ -175,6 +175,14 @@ NemoDate2023<- aggregate(NemoDW$SampleDW ~ NemoDW$Date, data = NemoDW, FUN= sum)
 
 
 ```{r}
+NoNemoDW2022 <- subset(EMERGE2022, ID %in% c("Antisoptera","nigriculus",  "Midges","Ceratopogonidae","Diptera", "Mosquito", "Zygoptera", "externus"))
+
+
+NoNemoDate2022<- aggregate(NoNemoDW2022$SampleDW ~ NoNemoDW2022$Date, data = NoNemoDW2022, FUN= sum)
+
+```
+
+```{r}
 NemoDWM2 <- read.csv("C:/Users/Parke/OneDrive/Documents/MS Thesis/Data/Nemo-22-23-dwm2.csv" , header = TRUE)
 
 NemoDWM2$Date <- as.Date(NemoDWM2$Date, format = "%d-%b")
@@ -225,4 +233,67 @@ dwDate22 <- aggregate(NoNemoDry22$SampleDW ~ NoNemoDry22$Date, data = NoNemoDry2
 
 ```
 
+```{r}
+#this is nemo and other bugs emergence per day mg/m2
+othervsnemo22 <- read.csv("C:/Users/Parke/OneDrive/Documents/MS Thesis/Data/2022-Nemo-Other-m2.csv" , header = TRUE)
 
+othervsnemo22$Date <- as.Date(othervsnemo22$Date, format = "%d-%b")
+```
+
+```{r}
+ggplot(othervsnemo22, aes(x = Date)) +
+  geom_point(aes(y = NemoM2022, color = "NemoM2022"), size = 2) +
+  geom_point(aes(y = OtherDWM22, color = "OtherDWM22"), size = 2) +
+  geom_line(aes(y = NemoM2022, color = "NemoM2022"), size = .5) +
+  geom_line(aes(y = OtherDWM22, color = "OtherDWM22"), size = .5) +
+  labs(x = "Date", y = " Emergence mg/m2", color = "Type") +
+  scale_color_manual(values = c("NemoM2022" = "blue", "OtherDWM22" = "red"),
+                     labels = c("NemoM2022" = "Nemo 2022", "OtherDWM22" = "Other Bugs 2022")) +
+  theme_minimal()
+
+```
+
+
+
+```{r}
+# Filter out NA values from the columns you are plotting
+othervsnemo22_filtered <- othervsnemo22[complete.cases(othervsnemo22$NemoM2023), ]
+othervsnemo22_filtered <- othervsnemo22_filtered[complete.cases(othervsnemo22_filtered$OtherDWM23), ]
+
+# Plotting with filtered data
+ggplot(othervsnemo22_filtered, aes(x = Date)) +
+  geom_point(aes(y = NemoM2023, color = "NemoM2023"), size = 2) +
+  geom_point(aes(y = OtherDWM23, color = "OtherDWM23"), size = 2) +
+  geom_line(aes(y = NemoM2023, color = "NemoM2023"), size = 0.5) +
+  geom_line(aes(y = OtherDWM23, color = "OtherDWM23"), size = 0.5) +
+  labs(x = "Date", y = "Emergence mg/m2", color = "Type") +
+  scale_color_manual(values = c("NemoM2023" = "green", "OtherDWM23" = "orange"),
+                     labels = c("NemoM2023" = "Nemo 2023", "OtherDWM23" = "Other Bugs 2023")) +
+  theme_minimal()
+```
+
+
+
+### Now im curious to look at just super source ponds like pond 1 in 2022 
+
+```{r}
+Pond1in2022 <- subset(EMERGE2022, ID %in% c("Antisoptera","nigriculus","hostilis", "Midges","Ceratopogonidae","Diptera", "Mosquito", "Zygoptera", "externus"))
+
+#pull out pond 1 
+Pond1in2022 <- subset(EMERGE2022, Pond %in% c("1", "MC Pond 1"))
+
+#separate pond 1 others
+P1Other22 <- subset(Pond1in2022, ID %in% c("Antisoptera","nigriculus", "Midges","Ceratopogonidae","Diptera", "Mosquito", "Zygoptera", "externus"))
+
+# pond 1 nemo 
+P1Nemo22 <- subset(Pond1in2022, ID %in% c("hostilis"))
+
+#Lump by date 
+P1Nemo22Date<- aggregate(P1Nemo22$SampleDW ~ P1Nemo22$Date, data = P1Nemo22, FUN= sum)
+
+P1Other22Date<- aggregate(P1Other22$SampleDW ~ P1Other22$Date, data = P1Other22, FUN= sum)
+
+# now make the spreadsheet 
+
+
+```
