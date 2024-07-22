@@ -1,0 +1,97 @@
+---
+title: "Relative cont"
+author: "Parker Bausman"
+date: "2024-07-17"
+output: html_document
+---
+
+
+
+##### SOMETHING FEELS OFF HERE. TRACE BACK TO NEMODWM2 AND TROUBLESHOOT 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+library(lubridate)
+```
+
+### This will be code to determine the relative contribution of nemo to subsidies. I am interested in how this varies at scale. I plan to look at a pond scale, nemo containing ponds, and all ponds sampled. I might even be able to estimate total cont across the whole cut. 
+
+```{r}
+#lets start with pond 1 since I Have the data prepped. 
+#Ill use the emergence /m2 
+
+pond1stuff$totalemerge <- NA
+#total emergence per day 
+pond1stuff$totalemerge <- rowSums(pond1stuff[ ,c(4,5)])
+#percent cont. 
+pond1stuff$percentcont <- NA
+
+pond1stuff$percentcont <- (pond1stuff$Pond1NemoM2 / pond1stuff$totalemerge)*100
+```
+
+```{r}
+ggplot(pond1stuff, aes(x=Date))+ 
+  geom_point(aes(y = percentcont), size=2)+
+  geom_line(aes(y = percentcont), size=.5)+ 
+  labs(x= "Date", y= "Percent Contribution")+
+  ggtitle("Nemo percent contribution to pond 1 export")+
+  theme(plot.title = element_text(hjust = 0.5))+
+  ylim(0,100)
+```
+
+```{r}
+#Now lets do all 7 ponds 22
+
+othervsnemo22$totalemerge22 <- NA
+#total emergence per day 
+othervsnemo22$totalemerge22 <- rowSums(othervsnemo22[ ,c(2,3)])
+#percent cont. 
+othervsnemo22$percentcont22 <- NA
+
+othervsnemo22$percentcont22 <- (othervsnemo22$NemoM2022 / othervsnemo22$totalemerge22)*100
+```
+
+```{r}
+ggplot(othervsnemo22, aes(x=Date))+ 
+  geom_point(aes(y = percentcont22), size=2)+
+  geom_line(aes(y = percentcont22), size=.5)+ 
+  labs(x= "Date", y= "Percent Contribution")+
+  ggtitle("Nemo percent contribution to sampled ponds export 2022")+
+  theme(plot.title = element_text(hjust = 0.5))+
+  ylim(0,100)
+```
+```{r}
+#Now lets do all 7 ponds 23
+
+
+othervsnemo23 <- data.frame(othervsnemo22[, c(1,4,5,10)])
+
+
+othervsnemo23$percentcont23 <- NA
+
+othervsnemo23$percentcont23 <- (othervsnemo23$NemoM2023 / othervsnemo23$totalemerge23)*100
+```
+
+```{r}
+
+# Filter out NA values from the columns you are plotting
+othervsnemo23_filtered <- othervsnemo23[complete.cases(othervsnemo23$percentcont23), ]
+
+
+ggplot(othervsnemo23_filtered, aes(x=Date))+ 
+  geom_point(aes(y = percentcont23), size=2)+
+  geom_line(aes(y = percentcont23), size=.5)+ 
+  labs(x= "Date", y= "Percent Contribution")+
+  ggtitle("Nemo percent contribution to sampled ponds export 2023")+
+  theme(plot.title = element_text(hjust = 0.5))+
+  ylim(0,100)
+```
+
+#when we think about scale a single pond may provide a large sub contribution but at scale this contribution is smaller but over a longer period 

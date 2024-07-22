@@ -297,3 +297,23 @@ P1Other22Date<- aggregate(P1Other22$SampleDW ~ P1Other22$Date, data = P1Other22,
 
 
 ```
+
+```{r}
+pond1stuff <- read.csv("C:/Users/Parke/OneDrive/Documents/MS Thesis/Data/Pond1-2022-Emergence.csv" , header = TRUE)
+
+pond1stuff$Date <- as.Date(pond1stuff$Date, format = "%d-%b")
+```
+
+```{r}
+# Plotting with filtered data
+ggplot(pond1stuff, aes(x = Date)) +
+  geom_point(aes(y = Pond1NemoM2, color = "Pond1NemoM2"), size = 2) +
+  geom_point(aes(y = Pond1OtherM2, color = "Pond1OtherM2"), size = 2) +
+  geom_line(aes(y = Pond1NemoM2, color = "Pond1NemoM2"), size = 0.5) +
+  geom_line(aes(y = Pond1OtherM2, color = "Pond1OtherM2"), size = 0.5) +
+  labs(x = "Date", y = "Emergence mg/m2", color = "Type") +
+  scale_color_manual(values = c("Pond1NemoM2" = "green", "Pond1OtherM2" = "orange"),
+                     labels = c("Pond1NemoM2" = "Pond1NemoM2 ", "Pond1OtherM2" = "Other Bugs 2023")) +
+  theme_minimal()
+```
+
