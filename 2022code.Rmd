@@ -237,6 +237,8 @@ dwDate22 <- aggregate(NoNemoDry22$SampleDW ~ NoNemoDry22$Date, data = NoNemoDry2
 #this is nemo and other bugs emergence per day mg/m2
 othervsnemo22 <- read.csv("C:/Users/Parke/OneDrive/Documents/MS Thesis/Data/2022-Nemo-Other-m2.csv" , header = TRUE)
 
+othervsnemo2022 <- othervsnemo2022[,c(-4,-5)]
+
 othervsnemo22$Date <- as.Date(othervsnemo22$Date, format = "%d-%b")
 ```
 

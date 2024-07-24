@@ -47,6 +47,17 @@ ggplot(pond1stuff, aes(x=Date))+
 ```
 
 ```{r}
+#Lets start with 2022 
+othervsnemo22 <- read.csv("C:/Users/Parke/OneDrive/Documents/MS Thesis/Data/2022-Nemo-Other-m2.csv" , header = TRUE)
+
+othervsnemo22 <- othervsnemo2022[,c(-4,-5)]
+
+othervsnemo22$Date <- as.Date(othervsnemo22$Date, format = "%d-%b")
+```
+
+
+
+```{r}
 #Now lets do all 7 ponds 22
 
 othervsnemo22$totalemerge22 <- NA
@@ -68,24 +79,25 @@ ggplot(othervsnemo22, aes(x=Date))+
   ylim(0,100)
 ```
 ```{r}
-#Now lets do all 7 ponds 23
+#Lets start with 2023 
+othervsnemo23 <- read.csv("C:/Users/Parke/OneDrive/Documents/MS Thesis/Data/2023-Nemo-Other-m2.csv" , header = TRUE)
 
+othervsnemo23 <- na.omit(othervsnemo23)
 
-othervsnemo23 <- data.frame(othervsnemo22[, c(1,4,5,10)])
+othervsnemo23$Date <- as.Date(othervsnemo23$Date, format = "%d-%b")
 
 
 othervsnemo23$percentcont23 <- NA
 
-othervsnemo23$percentcont23 <- (othervsnemo23$NemoM2023 / othervsnemo23$totalemerge23)*100
+othervsnemo23$percentcont23 <- (othervsnemo23$NemoDWM23 / othervsnemo23$OtherDWM23)*100
+
+#since Nemo > all other for other export lets replace that 2000% cont. value with a placeholder 100 
+
 ```
 
 ```{r}
 
-# Filter out NA values from the columns you are plotting
-othervsnemo23_filtered <- othervsnemo23[complete.cases(othervsnemo23$percentcont23), ]
-
-
-ggplot(othervsnemo23_filtered, aes(x=Date))+ 
+ggplot(othervsnemo23, aes(x=Date))+ 
   geom_point(aes(y = percentcont23), size=2)+
   geom_line(aes(y = percentcont23), size=.5)+ 
   labs(x= "Date", y= "Percent Contribution")+
