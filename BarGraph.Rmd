@@ -1,0 +1,56 @@
+---
+title: "Bar Graph"
+author: "Parker Bausman"
+date: "2024-07-25"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+```
+
+```{r}
+NoNemoDate2022$Date <- NoNemoDate2022$`NoNemoDW2022$Date`
+NoNemoDate2022$NoNemoDryWeight <- NoNemoDate2022$`NoNemoDW2022$SampleDW`
+AllOtherDate22 <- NoNemoDate2022[ ,c(3,4)]
+AllOtherDate22$Date <- gsub("22-", "", AllOtherDate22$Date)
+```
+
+```{r}
+NemoDate22 <- NemoDate2022
+NemoDate22$Date <- NemoDate22$`nemoDW22$Date`
+NemoDate22$NoNemoDryWeight <- NemoDate22$`nemoDW22$SampleDW`
+NemoDate22 <- NemoDate22[ ,c(3,4)]
+NemoDate22$Date <- gsub("22-", "", NemoDate22$Date)
+```
+
+```{r}
+BarChart22 <- merge(AllOtherDate22, NemoDate22, by = "Date")
+names(BarChart22)[names(BarChart22) == 'NoNemoDryWeight.x'] <- 'NoNemoDry'
+names(BarChart22)[names(BarChart22) == 'NoNemoDryWeight.y'] <- 'NemoDry'
+names(BarChart22)[names(BarChart22) == 'Date'] <- 'Date-2022'
+```
+
+
+```{r}
+library(ggplot2)
+
+# Convert data to long format for better handling with ggplot2
+BarChart22_long <- BarChart22 %>%
+  pivot_longer(cols = c(NoNemoDry, NemoDry),
+               names_to = "Type",
+               values_to = "Biomass")
+
+# Plot
+ggplot(BarChart22_long, aes(x = `Date-2022`, y = Biomass, fill = Type)) + 
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Date 2022", y = "Biomass (mg)", title = "Subsidy export of 7 sampled ponds") +
+  scale_fill_manual(values = c("NoNemoDry" = "red", "NemoDry" = "blue"),
+                    labels = c("N. hostilis", "Other insects")) +
+  theme_minimal()
+
+```
+
+
+

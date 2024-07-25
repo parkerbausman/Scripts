@@ -22,8 +22,8 @@ library(lubridate)
 ```{r}
 #float 1 has interspersed 2023 and 2022, select 2022 
 
-Float2022.1 <- Float1[grepl("2022", Float1$Date, fixed = TRUE), ]
-Float2022.2 <- Float2[grepl("2022", Float2$Date, fixed = TRUE), ]
+Float2022.1 <- Float1[grepl("22", Float1$Date, fixed = TRUE), ]
+Float2022.2 <- Float2[grepl("22", Float2$Date, fixed = TRUE), ]
 
 # Convert to data frames if they are not already
 Float2022.1 <- as.data.frame(Float2022.1)

@@ -87,7 +87,7 @@ FloatOther$ID <- "Other"
 ```
 
 ```{r}
-Float <- rbind(FloatNemo, FloatOther)
+FloatAll <- rbind(FloatNemo, FloatOther)
 ```
 
 
