@@ -3,6 +3,7 @@ This is a collection of scripts used during my masters thesis. Some are old and 
 WHEN LOOKING AT MG/M2 PER DAY, 202X-Nemo-Other-M2 is the correct data
 
 - Raw data is input into "Float combine" where my two datasets are merged
+    - UNKxxx are given random numbers to make sure there are no duplicate measures per pond 
 - "LW-Dry-Mass" then uses length weight regressions to determine an estimate for dry mass per sample. Final product = "EMERGE" 
 - "Nemo_Other_DW" subsets nemo emergence and all other insect emergence numbers. These are raw emergence values, not adjusted for per/m2
 - "NemoVSEmerge" does a few things: 

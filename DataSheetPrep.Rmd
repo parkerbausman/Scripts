@@ -1,0 +1,93 @@
+---
+title: "DataSheet"
+author: "Parker Bausman"
+date: "2024-07-24"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Preparing data for modeling :) 
+
+Steps 
+take nemo and all other sheets
+group by date, pond, sample, direction 
+
+
+```{r}
+Float1 <- read.csv("C:/Users/Parke/OneDrive/Documents/MS Thesis/Data/FLOAT23-MB.csv", header=TRUE)
+Float2 <- read.csv("C:/Users/Parke/OneDrive/Documents/MS Thesis/Data/FLOAT23-PB.csv", header=TRUE)
+```
+
+
+
+```{r}
+#combine data 
+Float <- rbind(subsetFloat,subsetFloat2022)
+```
+
+
+```{r}
+#read in LW data 
+lw<-read.csv("C:/Users/Parke/OneDrive/Documents/MS Thesis/Data/LW-Float.csv",header=TRUE)
+head(lw)
+```
+
+
+```{r}
+#merge float data and LW data 
+Float <- merge(Float, lw, by="ID", all=T)
+```
+
+```{r}
+# calculating log (dry weight) from length
+Float$logDW <- with(Float, a + (b * log((Length), base=base)))
+
+#untransforming log (dry weight) to dry weight (mg)
+Float$DW <- with(Float, (base^(logDW)))
+```
+
+```{r}
+#now multiply dry weight by number of individuals 
+Float$SampleDW <- NA
+
+Float$SampleDW <- (Float$DW * Float$Count)
+```
+
+```{r}
+#Pair down to cols needed 
+Float <- Float[, c(1,2,3,4,5,14)]
+```
+
+```{r}
+#Separate by nemo or no nemo 
+FloatNemo <- subset(Float, ID %in% c("hostilis"))
+FloatOther <- subset(Float, ID %in% c("Antisoptera", "Zygoptera", "nigriculus",  "Midges","Ceratopogonidae","Diptera", "Mosquito"))
+```
+
+```{r}
+#summarize by sample
+FloatNemo <- FloatNemo %>%
+  group_by( Date, Pond, Direction) %>%
+  summarize(Total_SampleDW = sum(SampleDW))
+```
+```{r}
+#summarize by sample
+FloatOther <- FloatOther %>%
+  group_by( Date, Pond, Direction) %>%
+  summarize(Total_SampleDW = sum(SampleDW))
+```
+```{r}
+#add nemo non nemo col to each
+FloatNemo$ID <- "Nemo"
+FloatOther$ID <- "Other"
+
+```
+
+```{r}
+Float <- rbind(FloatNemo, FloatOther)
+```
+
+

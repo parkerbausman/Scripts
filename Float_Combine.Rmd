@@ -92,7 +92,7 @@ for (i in 1:nrow(Float2023)) {
 ```
 
 ```{r}
-subsetFloat <- subset(Float2023, ID %in% c("Antisoptera","nigriculus", "hostilis", "Midges","Ceratopogonidae","Diptera", "Mosquito"))
+subsetFloat <- subset(Float2023, ID %in% c("Antisoptera","nigriculus", "hostilis", "Midges","Ceratopogonidae","Diptera", "Mosquito", "Zygoptera"))
 ```
 
 
