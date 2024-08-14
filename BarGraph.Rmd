@@ -8,49 +8,186 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(dplyr)
-```
-
-```{r}
-NoNemoDate2022$Date <- NoNemoDate2022$`NoNemoDW2022$Date`
-NoNemoDate2022$NoNemoDryWeight <- NoNemoDate2022$`NoNemoDW2022$SampleDW`
-AllOtherDate22 <- NoNemoDate2022[ ,c(3,4)]
-AllOtherDate22$Date <- gsub("22-", "", AllOtherDate22$Date)
-```
-
-```{r}
-NemoDate22 <- NemoDate2022
-NemoDate22$Date <- NemoDate22$`nemoDW22$Date`
-NemoDate22$NoNemoDryWeight <- NemoDate22$`nemoDW22$SampleDW`
-NemoDate22 <- NemoDate22[ ,c(3,4)]
-NemoDate22$Date <- gsub("22-", "", NemoDate22$Date)
-```
-
-```{r}
-BarChart22 <- merge(AllOtherDate22, NemoDate22, by = "Date")
-names(BarChart22)[names(BarChart22) == 'NoNemoDryWeight.x'] <- 'NoNemoDry'
-names(BarChart22)[names(BarChart22) == 'NoNemoDryWeight.y'] <- 'NemoDry'
-names(BarChart22)[names(BarChart22) == 'Date'] <- 'Date-2022'
-```
-
-
-```{r}
+library(tidyverse)
 library(ggplot2)
+```
 
-# Convert data to long format for better handling with ggplot2
-BarChart22_long <- BarChart22 %>%
+
+```{r}
+#in 2022, 1 , 12 ,8, 9 have nemo
+PondsWithNemo2022 <- subset(floating2022, Pond %in% c("1","12","8"))
+
+PondsWithNemo2022Nemo <- subset(PondsWithNemo2022, ID %in% c("Nemo"))
+PondsWithNemo2022Other <- subset(PondsWithNemo2022, ID %in% c("Other"))
+
+
+PWN2022NemoDate <- aggregate(PondsWithNemo2022Nemo$Total_SampleDW ~ PondsWithNemo2022Nemo$Date, data = PondsWithNemo2022Nemo, FUN = sum)
+
+
+PWN2022OtherDate <- aggregate(PondsWithNemo2022Other$Total_SampleDW ~ PondsWithNemo2022Other$Date, data = PondsWithNemo2022Other, FUN = sum)
+
+#need to rename col for succesful merge 
+names(PWN2022NemoDate)[names(PWN2022NemoDate) == 'PondsWithNemo2022Nemo$Date'] <- 'Date'
+names(PWN2022OtherDate)[names(PWN2022OtherDate) == 'PondsWithNemo2022Other$Date'] <- 'Date'
+
+PWNBarChart <- left_join(PWN2022NemoDate, PWN2022OtherDate, by = "Date")
+
+names(PWNBarChart)[names(PWNBarChart) == 'PondsWithNemo2022Nemo$Total_SampleDW'] <- 'NemoDry'
+names(PWNBarChart)[names(PWNBarChart) == 'PondsWithNemo2022Other$Total_SampleDW'] <- 'NoNemoDry'
+```
+
+```{r}
+PWNBarChart <- PWNBarChart %>%
   pivot_longer(cols = c(NoNemoDry, NemoDry),
                names_to = "Type",
                values_to = "Biomass")
 
-# Plot
-ggplot(BarChart22_long, aes(x = `Date-2022`, y = Biomass, fill = Type)) + 
+PWNBarChart$Date <- as.Date(PWNBarChart$Date , format = "%d-%b-%y")
+PWNBarChart$Date <- gsub("2022-", "", PWNBarChart$Date)
+```
+
+```{r}
+ggplot(PWNBarChart, aes(x = `Date`, y = Biomass, fill = Type)) + 
   geom_bar(stat = "identity", position = "dodge") +
-  labs(x = "Date 2022", y = "Biomass (mg)", title = "Subsidy export of 7 sampled ponds") +
+  labs(x = "Date 2022", y = "Biomass (mg)", title = "Subsidy export of ponds which produced nemo in 2022 (1,8,12)") +
   scale_fill_manual(values = c("NoNemoDry" = "red", "NemoDry" = "blue"),
                     labels = c("N. hostilis", "Other insects")) +
   theme_minimal()
-
 ```
 
 
 
+
+```{r}
+
+AllPonds22 <- subset(floating2022, Pond %in% c("1", "3", "5", "6","12","8","9"))
+
+AllPonds22Nemo <- subset(AllPonds22, ID %in% c("Nemo"))
+AllPonds22Other <- subset(AllPonds22, ID %in% c("Other"))
+
+
+AllPonds22NemoDate <- aggregate(AllPonds22Nemo$Total_SampleDW ~ AllPonds22Nemo$Date, data = AllPonds22Nemo, FUN = sum)
+
+
+AllPonds22OtherDate <- aggregate(AllPonds22Other$Total_SampleDW ~ AllPonds22Other$Date, data = AllPonds22Other, FUN = sum)
+
+#need to rename col for succesful merge 
+names(AllPonds22NemoDate)[names(AllPonds22NemoDate) == 'AllPonds22Nemo$Date'] <- 'Date'
+names(AllPonds22OtherDate)[names(AllPonds22OtherDate) == 'AllPonds22Other$Date'] <- 'Date'
+
+AllPondBarChart <- left_join(AllPonds22NemoDate, AllPonds22OtherDate, by = "Date")
+
+names(AllPondBarChart)[names(AllPondBarChart) == 'AllPonds22Nemo$Total_SampleDW'] <- 'NemoDry'
+
+names(AllPondBarChart)[names(AllPondBarChart) == 'AllPonds22Other$Total_SampleDW'] <- 'NoNemoDry'
+```
+
+```{r}
+AllPondBarChart <- AllPondBarChart %>%
+  pivot_longer(cols = c(NoNemoDry, NemoDry),
+               names_to = "Type",
+               values_to = "Biomass")
+
+AllPondBarChart$Date <- as.Date(AllPondBarChart$Date , format = "%d-%b-%y")
+AllPondBarChart$Date <- gsub("2022-", "", AllPondBarChart$Date)
+```
+
+```{r}
+ggplot(AllPondBarChart, aes(x = `Date`, y = Biomass, fill = Type)) + 
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Date 2022", y = "Biomass (mg)", title = "Subsidy export of 7 sampled ponds (1,3,5,6,8,9,12)") +
+  scale_fill_manual(values = c("NoNemoDry" = "red", "NemoDry" = "blue"),
+                    labels = c("N. hostilis", "Other insects")) +
+  theme_minimal()
+```
+### It seems that the ponds which support nemo are the ones which are already producing the most subsidies 
+
+
+```{r}
+
+Pond1in22 <- subset(floating2022, Pond %in% c("1"))
+
+Pond1in22Nemo <- subset(Pond1in22, ID %in% c("Nemo"))
+Pond1in22Other <- subset(Pond1in22, ID %in% c("Other"))
+
+
+Pond1in22NemoDate <- aggregate(Pond1in22Nemo$Total_SampleDW ~ Pond1in22Nemo$Date, data = Pond1in22Nemo, FUN = sum)
+
+
+Pond1in22OtherDate <- aggregate(Pond1in22Other$Total_SampleDW ~ Pond1in22Other$Date, data = Pond1in22Other, FUN = sum)
+
+#need to rename col for succesful merge 
+names(Pond1in22NemoDate)[names(Pond1in22NemoDate) == 'Pond1in22Nemo$Date'] <- 'Date'
+names(Pond1in22OtherDate)[names(Pond1in22OtherDate) == 'Pond1in22Other$Date'] <- 'Date'
+
+Pond1in22BarChart <- left_join(Pond1in22NemoDate, Pond1in22OtherDate, by = "Date")
+
+names(Pond1in22BarChart)[names(Pond1in22BarChart) == 'Pond1in22Nemo$Total_SampleDW'] <- 'NemoDry'
+
+names(Pond1in22BarChart)[names(Pond1in22BarChart) == 'Pond1in22Other$Total_SampleDW'] <- 'NoNemoDry'
+```
+
+```{r}
+Pond1in22BarChart <- Pond1in22BarChart %>%
+  pivot_longer(cols = c(NoNemoDry, NemoDry),
+               names_to = "Type",
+               values_to = "Biomass")
+
+Pond1in22BarChart$Date <- as.Date(Pond1in22BarChart$Date , format = "%d-%b-%y")
+Pond1in22BarChart$Date <- gsub("2022-", "", Pond1in22BarChart$Date)
+```
+
+```{r}
+ggplot(Pond1in22BarChart, aes(x = `Date`, y = Biomass, fill = Type)) + 
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Date 2022", y = "Biomass (mg)", title = "Subsidy export of pond 1") +
+  scale_fill_manual(values = c("NoNemoDry" = "red", "NemoDry" = "blue"),
+                    labels = c("N. hostilis", "Other insects")) +
+  theme_minimal()
+```
+
+
+
+### Lets look at 2023 
+
+```{r}
+#in 2022, 1 , 12 ,8, 9 have nemo
+PondsWithNemo2022 <- subset(floating2022, Pond %in% c("1","12","8"))
+
+PondsWithNemo2022Nemo <- subset(PondsWithNemo2022, ID %in% c("Nemo"))
+PondsWithNemo2022Other <- subset(PondsWithNemo2022, ID %in% c("Other"))
+
+
+PWN2022NemoDate <- aggregate(PondsWithNemo2022Nemo$Total_SampleDW ~ PondsWithNemo2022Nemo$Date, data = PondsWithNemo2022Nemo, FUN = sum)
+
+
+PWN2022OtherDate <- aggregate(PondsWithNemo2022Other$Total_SampleDW ~ PondsWithNemo2022Other$Date, data = PondsWithNemo2022Other, FUN = sum)
+
+#need to rename col for succesful merge 
+names(PWN2022NemoDate)[names(PWN2022NemoDate) == 'PondsWithNemo2022Nemo$Date'] <- 'Date'
+names(PWN2022OtherDate)[names(PWN2022OtherDate) == 'PondsWithNemo2022Other$Date'] <- 'Date'
+
+PWNBarChart <- left_join(PWN2022NemoDate, PWN2022OtherDate, by = "Date")
+
+names(PWNBarChart)[names(PWNBarChart) == 'PondsWithNemo2022Nemo$Total_SampleDW'] <- 'NemoDry'
+names(PWNBarChart)[names(PWNBarChart) == 'PondsWithNemo2022Other$Total_SampleDW'] <- 'NoNemoDry'
+```
+
+```{r}
+PWNBarChart <- PWNBarChart %>%
+  pivot_longer(cols = c(NoNemoDry, NemoDry),
+               names_to = "Type",
+               values_to = "Biomass")
+
+PWNBarChart$Date <- as.Date(PWNBarChart$Date , format = "%d-%b-%y")
+PWNBarChart$Date <- gsub("2022-", "", PWNBarChart$Date)
+```
+
+```{r}
+ggplot(PWNBarChart, aes(x = `Date`, y = Biomass, fill = Type)) + 
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Date 2022", y = "Biomass (mg)", title = "Subsidy export of ponds which produced nemo in 2022 (1,8,12)") +
+  scale_fill_manual(values = c("NoNemoDry" = "red", "NemoDry" = "blue"),
+                    labels = c("N. hostilis", "Other insects")) +
+  theme_minimal()
+```

@@ -87,6 +87,10 @@ for (i in 1:nrow(Float2023)) {
     # etc..
      Float2023$Length [i] <- 5.8935
      
+  } else if (Float2023$ID[i] == "Zygoptera") {
+    # etc..
+     Float2023$Length [i] <- 0
+     
   }
 }
 ```

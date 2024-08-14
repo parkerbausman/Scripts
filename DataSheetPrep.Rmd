@@ -7,6 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
 ```
 
 ## Preparing data for modeling :) 
@@ -64,7 +65,7 @@ Float <- Float[, c(1,2,3,4,5,14)]
 ```{r}
 #Separate by nemo or no nemo 
 FloatNemo <- subset(Float, ID %in% c("hostilis"))
-FloatOther <- subset(Float, ID %in% c("Antisoptera", "Zygoptera", "nigriculus",  "Midges","Ceratopogonidae","Diptera", "Mosquito"))
+FloatOther <- subset(Float, ID %in% c("Antisoptera", "Zygoptera", "nigriculus",  "Midges","Ceratopogonidae","Diptera", "Mosquito", "externus"))
 ```
 
 ```{r}
@@ -79,6 +80,13 @@ FloatOther <- FloatOther %>%
   group_by( Date, Pond, Direction) %>%
   summarize(Total_SampleDW = sum(SampleDW))
 ```
+
+
+
+
+
+### FLOAT OTHER IS PRODUCING NAs ??? 
+
 ```{r}
 #add nemo non nemo col to each
 FloatNemo$ID <- "Nemo"
@@ -88,6 +96,42 @@ FloatOther$ID <- "Other"
 
 ```{r}
 FloatAll <- rbind(FloatNemo, FloatOther)
+
+FloatAll$Date <- as.factor(FloatAll$Date)
+```
+
+
+```{r}
+#now separate 2022 and 2023 to see if different 
+floating2023 <- FloatAll[!grepl("22", FloatAll$Date), ]
+floating2022 <- FloatAll[!grepl("23", FloatAll$Date), ]
+```
+
+
+```{r}
+model <- lm(FloatAll$Total_SampleDW ~ FloatAll$ID + FloatAll$Date)
+summary(model)
+```
+
+```{r}
+model22 <- lm(floating2022$Total_SampleDW ~ floating2022$ID + floating2022$Date)
+summary(model22)
+```
+```{r}
+model23 <- lm(floating2023$Total_SampleDW ~ floating2023$ID + floating2023$Date)
+summary(model23)
+```
+```{r}
+#now look at just pond 1 in 2022 
+pond1floating2022 <- floating2022[grepl("1", floating2022$Pond), ]
+#remove pond 12 from pond1floating2022
+pond1floating2022 <- pond1floating2022[!grepl("12", pond1floating2022$Pond), ]
+```
+
+```{r}
+#now model 
+modelpond1 <- lm(pond1floating2022$Total_SampleDW ~ pond1floating2022$ID + pond1floating2022$Date)
+summary(modelpond1)
 ```
 
 
