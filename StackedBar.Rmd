@@ -1,0 +1,90 @@
+---
+title: "StackedBarChart"
+author: "Parker Bausman"
+date: "2024-08-14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Side quest! Make a stacked bar chart of subsidy export in 2022 with one color being nemo producing ponds and one color being all other ponds 
+
+```{r}
+floatnemo2022 <- floating2022[!grepl("other", floating2022$ID), ]
+floatnemo2023 <- floating2023[!grepl("other", floating2023$ID), ]
+```
+
+
+```{r}
+NDOtherWithNemo22 <- rbind(floatnemo2022, NoDragon2022)
+NDOtherWithNemo23 <- rbind(floatnemo2023, NoDragon2023)
+```
+
+```{r}
+library(ggplot2)
+library(tidyverse)
+
+ggplot(NDOtherWithNemo22, aes(x = Date, y = Total_SampleDW, fill = ID)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Date", y = "Biomass", fill = "Sample") +
+  theme_minimal() +
+  scale_fill_manual(values = c("Nemo" = "blue", "Other" = "red"))
+```
+#that was unintentional but this can also be cool so keep it lol, date is messed up though 
+
+
+#ok so I need two groups, biomass of ponds with nemo per date and biomass of ponds without nemo per date 
+
+```{r}
+
+NoNemoFloat2022 <- floating2023[!grepl("Nemo", floating2023$ID), ]
+
+NemoPondsBiomass22 <- subset(NoNemoFloat2022, Pond %in% c("1","12","8"))
+NoNemoPondsBiomass22 <- subset(NoNemoFloat2022, Pond %in% c("3","5","6","9"))
+
+
+NemoPondsBiomass22Date <- aggregate(NemoPondsBiomass22$Total_SampleDW ~ NemoPondsBiomass22$Date, data = NemoPondsBiomass22, FUN = sum)
+
+NoNemoPondsBiomass22Date <- aggregate(NoNemoPondsBiomass22$Total_SampleDW ~ NoNemoPondsBiomass22$Date, data = NoNemoPondsBiomass22, FUN = sum)
+
+#need to rename col for succesful merge 
+
+names(NemoPondsBiomass22Date) <- c("Date", "NemoPonds")
+
+names(NoNemoPondsBiomass22Date) <- c("Date", "NoNemoPonds")
+
+Pondswithandwithoutnemo2022 <- merge(NoNemoPondsBiomass22Date, NemoPondsBiomass22Date, by = "Date")
+
+
+
+
+```
+
+```{r}
+# Pivoting the data longer
+PWWON22 <- Pondswithandwithoutnemo2022 %>%
+  pivot_longer(
+    cols = c("NemoPonds", "NoNemoPonds"),  # Columns to pivot
+    names_to = "SampleType",                    # New column for the original column names
+    values_to = "Biomass"                      # New column for the values
+  )
+
+```
+
+```{r}
+PWWON22$Date <- as.Date(PWWON22$Date , format = "%d-%b-%y")
+PWWON22$Date <- gsub("-23", "", PWWON22$Date)
+PWWON22$Date <- gsub("2023-", "", PWWON22$Date)
+```
+
+
+```{r}
+ggplot(PWWON22, aes(x = Date, y = Biomass, fill = SampleType)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Date", y = "Biomass (mg)", fill = "Pond Category", title = "Subsidy export of ponds which did/did not produce Nemo 2023") +
+  theme_minimal() +
+  scale_fill_manual(values = c("NoNemoPonds" = "red","NemoPonds" = "blue"))
+```
+

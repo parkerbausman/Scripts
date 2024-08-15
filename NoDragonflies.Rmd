@@ -1,0 +1,42 @@
+---
+title: "No Dragonflies!"
+author: "Parker Bausman"
+date: "2024-08-14"
+output: html_document
+---
+
+#dragonflies are making things a bit wonky! Lets make a datasheet for 2022 and 2023 without dragonflies 
+
+```{r}
+NoDragon <- subset(Float, ID %in% c( "Zygoptera", "nigriculus",  "Midges","Ceratopogonidae","Diptera", "Mosquito", "externus"))
+```
+
+#ND prefix for No Dragonflies :) 
+
+```{r}
+#summarize by sample
+NoDragon <- NoDragon %>%
+  group_by( Date, Pond, Direction) %>%
+  summarize(Total_SampleDW = sum(SampleDW))
+```
+
+```{r}
+#add nemo non nemo col to each
+
+NoDragon$ID <- "Other"
+
+```
+
+```{r}
+NoDragon$Date <- as.factor(NoDragon$Date)
+```
+
+
+```{r}
+#now separate 2022 and 2023 to see if different 
+NoDragon2023 <- NoDragon[!grepl("22", NoDragon$Date), ]
+NoDragon2022 <- NoDragon[!grepl("23", NoDragon$Date), ]
+```
+
+
+

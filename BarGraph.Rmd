@@ -95,7 +95,49 @@ AllPondBarChart$Date <- gsub("2022-", "", AllPondBarChart$Date)
 ```{r}
 ggplot(AllPondBarChart, aes(x = `Date`, y = Biomass, fill = Type)) + 
   geom_bar(stat = "identity", position = "dodge") +
-  labs(x = "Date 2022", y = "Biomass (mg)", title = "Subsidy export of 7 sampled ponds (1,3,5,6,8,9,12)") +
+  labs(x = "Date 2022", y = "Biomass (mg)", title = "Subsidy export of 7 sampled ponds in 2022 (1,3,5,6,8,9,12)") +
+  scale_fill_manual(values = c("NoNemoDry" = "red", "NemoDry" = "blue"),
+                    labels = c("N. hostilis", "Other insects")) +
+  theme_minimal()
+```
+```{r}
+
+AllPonds23 <- subset(floating2023, Pond %in% c("1", "3", "5", "6","12","8","9"))
+
+AllPonds23Nemo <- subset(AllPonds23, ID %in% c("Nemo"))
+AllPonds23Other <- subset(AllPonds23, ID %in% c("Other"))
+
+
+AllPonds23NemoDate <- aggregate(AllPonds23Nemo$Total_SampleDW ~ AllPonds23Nemo$Date, data = AllPonds23Nemo, FUN = sum)
+
+
+AllPonds23OtherDate <- aggregate(AllPonds23Other$Total_SampleDW ~ AllPonds23Other$Date, data = AllPonds23Other, FUN = sum)
+
+#need to rename col for succesful merge 
+names(AllPonds23NemoDate)[names(AllPonds23NemoDate) == 'AllPonds23Nemo$Date'] <- 'Date'
+names(AllPonds23OtherDate)[names(AllPonds23OtherDate) == 'AllPonds23Other$Date'] <- 'Date'
+
+AllPondBarChart23 <- left_join(AllPonds23NemoDate, AllPonds23OtherDate, by = "Date")
+
+names(AllPondBarChart23)[names(AllPondBarChart23) == 'AllPonds23Nemo$Total_SampleDW'] <- 'NemoDry'
+
+names(AllPondBarChart23)[names(AllPondBarChart23) == 'AllPonds23Other$Total_SampleDW'] <- 'NoNemoDry'
+```
+
+```{r}
+AllPondBarChart23 <- AllPondBarChart23 %>%
+  pivot_longer(cols = c(NoNemoDry, NemoDry),
+               names_to = "Type",
+               values_to = "Biomass")
+
+AllPondBarChart23$Date <- as.Date(AllPondBarChart23$Date , format = "%d-%b-%y")
+AllPondBarChart23$Date <- gsub("2023-", "", AllPondBarChart23$Date)
+```
+
+```{r}
+ggplot(AllPondBarChart23, aes(x = `Date`, y = Biomass, fill = Type)) + 
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Date", y = "Biomass (mg)", title = "Subsidy export of 7 sampled ponds in 2023 (1,3,5,6,8,9,12)") +
   scale_fill_manual(values = c("NoNemoDry" = "red", "NemoDry" = "blue"),
                     labels = c("N. hostilis", "Other insects")) +
   theme_minimal()
@@ -140,7 +182,7 @@ Pond1in22BarChart$Date <- gsub("2022-", "", Pond1in22BarChart$Date)
 ```{r}
 ggplot(Pond1in22BarChart, aes(x = `Date`, y = Biomass, fill = Type)) + 
   geom_bar(stat = "identity", position = "dodge") +
-  labs(x = "Date 2022", y = "Biomass (mg)", title = "Subsidy export of pond 1") +
+  labs(x = "Date 2022", y = "Biomass (mg)", title = "Subsidy export of pond 1 2022") +
   scale_fill_manual(values = c("NoNemoDry" = "red", "NemoDry" = "blue"),
                     labels = c("N. hostilis", "Other insects")) +
   theme_minimal()
@@ -152,10 +194,95 @@ ggplot(Pond1in22BarChart, aes(x = `Date`, y = Biomass, fill = Type)) +
 
 ```{r}
 #in 2022, 1 , 12 ,8, 9 have nemo
+PondsWithNemo2023 <- subset(floating2023, Pond %in% c("5","12","9"))
+
+PondsWithNemo2023Nemo <- subset(PondsWithNemo2023, ID %in% c("Nemo"))
+PondsWithNemo2023Other <- subset(PondsWithNemo2023, ID %in% c("Other"))
+
+
+PWN2023NemoDate <- aggregate(PondsWithNemo2023Nemo$Total_SampleDW ~ PondsWithNemo2023Nemo$Date, data = PondsWithNemo2023Nemo, FUN = sum)
+
+
+PWN2023OtherDate <- aggregate(PondsWithNemo2023Other$Total_SampleDW ~ PondsWithNemo2023Other$Date, data = PondsWithNemo2023Other, FUN = sum)
+
+#need to rename col for succesful merge 
+names(PWN2023NemoDate)[names(PWN2023NemoDate) == 'PondsWithNemo2023Nemo$Date'] <- 'Date'
+names(PWN2023OtherDate)[names(PWN2023OtherDate) == 'PondsWithNemo2023Other$Date'] <- 'Date'
+
+PWNBar23Chart <- left_join(PWN2023NemoDate, PWN2023OtherDate, by = "Date")
+
+names(PWNBar23Chart)[names(PWNBar23Chart) == 'PondsWithNemo2023Nemo$Total_SampleDW'] <- 'NemoDry'
+names(PWNBar23Chart)[names(PWNBar23Chart) == 'PondsWithNemo2023Other$Total_SampleDW'] <- 'NoNemoDry'
+```
+
+```{r}
+PWNBar23Chart <- PWNBar23Chart %>%
+  pivot_longer(cols = c(NoNemoDry, NemoDry),
+               names_to = "Type",
+               values_to = "Biomass")
+
+PWNBar23Chart$Date <- as.Date(PWNBar23Chart$Date , format = "%d-%b-%y")
+PWNBar23Chart$Date <- gsub("2023-", "", PWNBar23Chart$Date)
+```
+
+```{r}
+ggplot(PWNBar23Chart, aes(x = `Date`, y = Biomass, fill = Type)) + 
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Date", y = "Biomass (mg)", title = "Subsidy export of ponds which produced nemo in 2023 (5,9,12)") +
+  scale_fill_manual(values = c("NoNemoDry" = "red", "NemoDry" = "blue"),
+                    labels = c("N. hostilis", "Other insects")) +
+  theme_minimal()
+```
+
+# 2023 only saw two dragonflies 
+#lets look at 2022 and 2023 without dragonflies 
+```{r}
+#in 2022, 1 , 12 ,8, 9 have nemo
 PondsWithNemo2022 <- subset(floating2022, Pond %in% c("1","12","8"))
 
+NDPondsWithNemo2022Nemo <- subset(PondsWithNemo2022, ID %in% c("Nemo"))
+NDPondsWithNemo2022Other <- subset(NoDragon2022, ID %in% c("Other"))
+
+
+NDPWN2022NemoDate <- aggregate(NDPondsWithNemo2022Nemo$Total_SampleDW ~ NDPondsWithNemo2022Nemo$Date, data = NDPondsWithNemo2022Nemo, FUN = sum)
+
+
+NDPWN2022OtherDate <- aggregate(NDPondsWithNemo2022Other$Total_SampleDW ~ NDPondsWithNemo2022Other$Date, data = NDPondsWithNemo2022Other, FUN = sum)
+
+#need to rename col for succesful merge 
+names(NDPWN2022NemoDate)[names(NDPWN2022NemoDate) == 'NDPondsWithNemo2022Nemo$Date'] <- 'Date'
+names(NDPWN2022OtherDate)[names(NDPWN2022OtherDate) == 'NDPondsWithNemo2022Other$Date'] <- 'Date'
+
+NDPWNBarChart <- left_join(NDPWN2022NemoDate, NDPWN2022OtherDate, by = "Date")
+
+names(NDPWNBarChart)[names(NDPWNBarChart) == 'NDPondsWithNemo2022Nemo$Total_SampleDW'] <- 'NemoDry'
+names(NDPWNBarChart)[names(NDPWNBarChart) == 'NDPondsWithNemo2022Other$Total_SampleDW'] <- 'NoNemoDry'
+```
+
+```{r}
+NDPWNBarChart <- NDPWNBarChart %>%
+  pivot_longer(cols = c(NoNemoDry, NemoDry),
+               names_to = "Type",
+               values_to = "Biomass")
+
+NDPWNBarChart$Date <- as.Date(NDPWNBarChart$Date , format = "%d-%b-%y")
+NDPWNBarChart$Date <- gsub("2022-", "", NDPWNBarChart$Date)
+```
+
+```{r}
+ggplot(NDPWNBarChart, aes(x = `Date`, y = Biomass, fill = Type)) + 
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Date 2022", y = "Biomass (mg)", title = "Subsidy export of ponds which produced nemo in 2022 (1,8,12), no dragonflies") +
+  scale_fill_manual(values = c("NoNemoDry" = "red", "NemoDry" = "blue"),
+                    labels = c("N. hostilis", "Other insects")) +
+  theme_minimal()
+```
+```{r}
+#in 2022, 1 , 12 ,8, 9 have nemo
+PondsWithNemo2022 <- subset(floating2022, Pond %in% c("12"))
+
 PondsWithNemo2022Nemo <- subset(PondsWithNemo2022, ID %in% c("Nemo"))
-PondsWithNemo2022Other <- subset(PondsWithNemo2022, ID %in% c("Other"))
+PondsWithNemo2022Other <- subset(NoDragon2022, ID %in% c("Other"))
 
 
 PWN2022NemoDate <- aggregate(PondsWithNemo2022Nemo$Total_SampleDW ~ PondsWithNemo2022Nemo$Date, data = PondsWithNemo2022Nemo, FUN = sum)
@@ -167,26 +294,70 @@ PWN2022OtherDate <- aggregate(PondsWithNemo2022Other$Total_SampleDW ~ PondsWithN
 names(PWN2022NemoDate)[names(PWN2022NemoDate) == 'PondsWithNemo2022Nemo$Date'] <- 'Date'
 names(PWN2022OtherDate)[names(PWN2022OtherDate) == 'PondsWithNemo2022Other$Date'] <- 'Date'
 
-PWNBarChart <- left_join(PWN2022NemoDate, PWN2022OtherDate, by = "Date")
+PWNBar22Chart <- left_join(PWN2022NemoDate, PWN2022OtherDate, by = "Date")
 
-names(PWNBarChart)[names(PWNBarChart) == 'PondsWithNemo2022Nemo$Total_SampleDW'] <- 'NemoDry'
-names(PWNBarChart)[names(PWNBarChart) == 'PondsWithNemo2022Other$Total_SampleDW'] <- 'NoNemoDry'
+names(PWNBar22Chart)[names(PWNBar22Chart) == 'PondsWithNemo2022Nemo$Total_SampleDW'] <- 'NemoDry'
+names(PWNBar22Chart)[names(PWNBar22Chart) == 'PondsWithNemo2022Other$Total_SampleDW'] <- 'NoNemoDry'
 ```
 
 ```{r}
-PWNBarChart <- PWNBarChart %>%
+PWNBar22Chart <- PWNBar22Chart %>%
   pivot_longer(cols = c(NoNemoDry, NemoDry),
                names_to = "Type",
                values_to = "Biomass")
 
-PWNBarChart$Date <- as.Date(PWNBarChart$Date , format = "%d-%b-%y")
-PWNBarChart$Date <- gsub("2022-", "", PWNBarChart$Date)
+PWNBar22Chart$Date <- as.Date(PWNBar22Chart$Date , format = "%d-%b-%y")
+PWNBar22Chart$Date <- gsub("2022-", "", PWNBar22Chart$Date)
 ```
 
 ```{r}
-ggplot(PWNBarChart, aes(x = `Date`, y = Biomass, fill = Type)) + 
+ggplot(PWNBar22Chart, aes(x = `Date`, y = Biomass, fill = Type)) + 
   geom_bar(stat = "identity", position = "dodge") +
-  labs(x = "Date 2022", y = "Biomass (mg)", title = "Subsidy export of ponds which produced nemo in 2022 (1,8,12)") +
+  labs(x = "Date", y = "Biomass (mg)", title = "Subsidy export of pond 12 without dragonflies in 2022") +
+  scale_fill_manual(values = c("NoNemoDry" = "red", "NemoDry" = "blue"),
+                    labels = c("N. hostilis", "Other insects")) +
+  theme_minimal()
+```
+
+# 2023 only saw two dragonflies 
+#lets look at 2022 and 2023 without dragonflies 
+```{r}
+#in 2022, 1 , 12 ,8, 9 have nemo
+PondsWithNemo2023 <- subset(floating2023, Pond %in% c("12"))
+
+NDPondsWithNemo2023Nemo <- subset(PondsWithNemo2023, ID %in% c("Nemo"))
+NDPondsWithNemo2023Other <- subset(NoDragon2023, ID %in% c("Other"))
+
+
+NDPWN2023NemoDate <- aggregate(NDPondsWithNemo2023Nemo$Total_SampleDW ~ NDPondsWithNemo2023Nemo$Date, data = NDPondsWithNemo2023Nemo, FUN = sum)
+
+
+NDPWN2023OtherDate <- aggregate(NDPondsWithNemo2023Other$Total_SampleDW ~ NDPondsWithNemo2023Other$Date, data = NDPondsWithNemo2023Other, FUN = sum)
+
+#need to rename col for succesful merge 
+names(NDPWN2023NemoDate)[names(NDPWN2023NemoDate) == 'NDPondsWithNemo2023Nemo$Date'] <- 'Date'
+names(NDPWN2023OtherDate)[names(NDPWN2023OtherDate) == 'NDPondsWithNemo2023Other$Date'] <- 'Date'
+
+NDPWNBarChart23 <- left_join(NDPWN2023NemoDate, NDPWN2023OtherDate, by = "Date")
+
+names(NDPWNBarChart23)[names(NDPWNBarChart23) == 'NDPondsWithNemo2023Nemo$Total_SampleDW'] <- 'NemoDry'
+names(NDPWNBarChart23)[names(NDPWNBarChart23) == 'NDPondsWithNemo2023Other$Total_SampleDW'] <- 'NoNemoDry'
+```
+
+```{r}
+NDPWNBarChart23 <- NDPWNBarChart23 %>%
+  pivot_longer(cols = c(NoNemoDry, NemoDry),
+               names_to = "Type",
+               values_to = "Biomass")
+
+NDPWNBarChart23$Date <- as.Date(NDPWNBarChart23$Date , format = "%d-%b-%y")
+NDPWNBarChart23$Date <- gsub("2023-", "", NDPWNBarChart23$Date)
+```
+
+```{r}
+ggplot(NDPWNBarChart23, aes(x = `Date`, y = Biomass, fill = Type)) + 
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Date", y = "Biomass (mg)", title = "Subsidy export of pond 12 without dragonflies in 2023") +
   scale_fill_manual(values = c("NoNemoDry" = "red", "NemoDry" = "blue"),
                     labels = c("N. hostilis", "Other insects")) +
   theme_minimal()
