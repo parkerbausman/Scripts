@@ -108,30 +108,3 @@ floating2022 <- FloatAll[!grepl("23", FloatAll$Date), ]
 ```
 
 
-```{r}
-model <- lm(FloatAll$Total_SampleDW ~ FloatAll$ID + FloatAll$Date)
-summary(model)
-```
-
-```{r}
-model22 <- lm(floating2022$Total_SampleDW ~ floating2022$ID + floating2022$Date)
-summary(model22)
-```
-```{r}
-model23 <- lm(floating2023$Total_SampleDW ~ floating2023$ID + floating2023$Date)
-summary(model23)
-```
-```{r}
-#now look at just pond 1 in 2022 
-pond1floating2022 <- floating2022[grepl("1", floating2022$Pond), ]
-#remove pond 12 from pond1floating2022
-pond1floating2022 <- pond1floating2022[!grepl("12", pond1floating2022$Pond), ]
-```
-
-```{r}
-#now model 
-modelpond1 <- lm(pond1floating2022$Total_SampleDW ~ pond1floating2022$ID + pond1floating2022$Date)
-summary(modelpond1)
-```
-
-

@@ -1,0 +1,28 @@
+---
+title: "Untitled"
+author: "Parker Bausman"
+date: "2024-08-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#with dragonflies 
+NewModel22 <- lm(floating2022$Total_SampleDW ~ floating2022$ID * floating2022$Date * floating2022$Pond)
+anova(NewModel22)
+
+AOV22 <- aov(floating2022$Total_SampleDW ~ floating2022$ID * floating2022$Date * floating2022$Pond)
+TukeyHSD(AOV22)
+```
+
+```{r}
+#with dragonflies 
+NewModel22 <- lm(floating2022$Total_SampleDW ~ floating2022$ID * floating2022$Date + floating2022$Pond)
+anova(NewModel22)
+
+AOV22 <- aov(floating2022$Total_SampleDW ~ floating2022$ID * floating2022$Date + floating2022$Pond)
+TukeyHSD(AOV22)
+```
