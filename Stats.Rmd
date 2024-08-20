@@ -1,0 +1,165 @@
+---
+title: "Stats"
+author: "Parker Bausman"
+date: "2024-08-16"
+output: html_document
+---
+
+```{r}
+install.packages("lme4")
+install.packages("lmerTest")  # Optional, for p-values
+install.packages("sjPlot")    # Optional, for plotting
+
+library(lme4)
+library(lmerTest)  # Optional
+library(sjPlot)    # Optional
+```
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#for floating 2022 and 2023 remove MCPOND and letters from pond column 
+
+floating2022$Pond <- gsub("MC Pond ", "", floating2022$Pond)
+floating2022$Pond <- gsub("a", "", floating2022$Pond)
+floating2022$Pond <- gsub("b", "", floating2022$Pond)
+floating2022$Pond <- gsub("c", "", floating2022$Pond)
+
+floating2023$Pond <- gsub("MC Pond ", "", floating2023$Pond)
+floating2023$Pond <- gsub("a", "", floating2023$Pond)
+floating2023$Pond <- gsub("b", "", floating2023$Pond)
+floating2023$Pond <- gsub("c", "", floating2023$Pond)
+
+NoDragon2022$Pond <- gsub("MC Pond ", "", NoDragon2022$Pond)
+NoDragon2022$Pond <- gsub("a", "", NoDragon2022$Pond)
+NoDragon2022$Pond <- gsub("b", "", NoDragon2022$Pond)
+NoDragon2022$Pond <- gsub("c", "", NoDragon2022$Pond)
+
+NoDragon2023$Pond <- gsub("MC Pond ", "", NoDragon2023$Pond)
+NoDragon2023$Pond <- gsub("a", "", NoDragon2023$Pond)
+NoDragon2023$Pond <- gsub("b", "", NoDragon2023$Pond)
+NoDragon2023$Pond <- gsub("c", "", NoDragon2023$Pond)
+```
+
+```{r}
+#I feel like ive done it before but I want to do it again clean. Bind no dragon with nemo values from floating 
+RemoveOther22 <- subset(floating2022, ID %in% c("Nemo"))
+NoDragonFloat2022 <- rbind(RemoveOther22, NoDragon2022)
+
+RemoveOther23 <- subset(floating2023, ID %in% c("Nemo"))
+NoDragonFloat2023 <- rbind(RemoveOther23, NoDragon2023)
+```
+
+
+```{r}
+#with dragonflies 
+NewModel22 <- lm(floating2022$Total_SampleDW ~ floating2022$ID * floating2022$Date + floating2022$Pond)
+anova(NewModel22)
+
+AOV22 <- aov(floating2022$Total_SampleDW ~ floating2022$ID * floating2022$Date + floating2022$Pond)
+TukeyHSD(AOV22)
+```
+
+```{r}
+#without dragonflies 
+NDNewModel22 <- lm(NoDragonFloat2022$Total_SampleDW ~ NoDragonFloat2022$ID * NoDragonFloat2022$Date + NoDragonFloat2022$Pond)
+anova(NDNewModel22)
+summary(NDNewModel22)
+
+NDAOV22 <- aov(NoDragonFloat2022$Total_SampleDW ~ NoDragonFloat2022$ID * NoDragonFloat2022$Date + NoDragonFloat2022$Pond)
+TukeyHSD(NDAOV22)
+```
+
+```{r}
+#without dragonflies 
+NDNewModel22 <- lm(NoDragonFloat2022$Total_SampleDW ~ NoDragonFloat2022$ID * NoDragonFloat2022$Date * NoDragonFloat2022$Pond)
+anova(NDNewModel22)
+summary(NDNewModel22)
+
+NDAOV22 <- aov(NoDragonFloat2022$Total_SampleDW ~ NoDragonFloat2022$ID * NoDragonFloat2022$Date * NoDragonFloat2022$Pond)
+TukeyHSD(NDAOV22)
+```
+
+```{r}
+#with dragonflies 
+NewModel23 <- lm(floating2023$Total_SampleDW ~ floating2023$ID * floating2023$Date * floating2023$Pond)
+anova(NewModel23)
+
+AOV23 <- aov(floating2023$Total_SampleDW ~ floating2023$ID * floating2023$Date * floating2023$Pond)
+TukeyHSD(AOV23)
+```
+
+```{r}
+#without dragonflies 
+NDNewModel23 <- lm(NoDragonFloat2023$Total_SampleDW ~ NoDragonFloat2023$ID * NoDragonFloat2023$Date * NoDragonFloat2023$Pond)
+anova(NDNewModel22)
+
+NDAOV23 <- aov(NoDragonFloat2023$Total_SampleDW ~ NoDragonFloat2023$ID * NoDragonFloat2023$Date * NoDragonFloat2023$Pond)
+TukeyHSD(NDAOV23)
+```
+
+
+
+
+
+#stats from another RMD doc 
+
+
+
+```{r}
+
+
+model <- lm(FloatAll$Total_SampleDW ~ FloatAll$ID + FloatAll$Date)
+summary(model)
+```
+
+```{r}
+model22 <- lm(floating2022$Total_SampleDW ~ floating2022$ID * floating2022$Date)
+summary(model22)
+anova(model22)
+```
+
+```{r}
+model23 <- lm(floating2023$Total_SampleDW ~ floating2023$ID * floating2023$Date)
+summary(model23)
+anova(model23)
+
+
+AOV23 <- aov(floating2023$Total_SampleDW ~ floating2023$ID * floating2023$Date)
+TukeyHSD(AOV23)
+
+```
+
+```{r}
+#now look at just pond 1 in 2022 
+pond1floating2022 <- floating2022[grepl("1", floating2022$Pond), ]
+#remove pond 12 from pond1floating2022
+pond1floating2022 <- pond1floating2022[!grepl("12", pond1floating2022$Pond), ]
+```
+
+```{r}
+#now model 
+modelpond1 <- lm(pond1floating2022$Total_SampleDW ~ pond1floating2022$ID + pond1floating2022$Date)
+summary(modelpond1)
+```
+
+```{r}
+#to test no dragon we need to combine nemo and nodragon 
+NDNemoOther23 <- rbind(AllPonds23Nemo, NoDragon2023)
+NDNemoOther22 <- rbind(AllPonds22Nemo, NoDragon2022)
+```
+
+
+```{r}
+NDmodel23 <- lm(NDNemoOther23$Total_SampleDW ~ NDNemoOther23$ID + NDNemoOther23$Date)
+summary(NDmodel23)
+```
+```{r}
+NDmodel22 <- lm(NDNemoOther22$Total_SampleDW ~ NDNemoOther22$ID + NDNemoOther22$Date)
+summary(NDmodel22)
+```
+
+

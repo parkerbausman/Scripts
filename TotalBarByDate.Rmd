@@ -1,0 +1,129 @@
+---
+title: "TotalBarByDate"
+author: "Parker Bausman"
+date: "2024-08-20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(tidyr)  # For replace_na function
+```
+
+
+
+```{r}
+AllPonds22 <- subset(floating2022, Pond %in% c("1", "3", "5", "6","12","8","9"))
+
+
+AllPonds22Date <- aggregate(AllPonds22$Total_SampleDW ~ AllPonds22$Date, data = AllPonds22, FUN = mean)
+
+
+#need to rename col for succesful merge 
+names(AllPonds22Date)[names(AllPonds22Date) == 'AllPonds22$Date'] <- 'Date'
+
+names(AllPonds22Date)[names(AllPonds22Date) == 'AllPonds22$Total_SampleDW'] <- 'Total_SampleDW'
+
+
+```
+
+```{r}
+# Calculate the mean, standard deviation, and count for each ID
+mean_sd_count22Nemo <- aggregate(Total_SampleDW ~ Date, data = AllPonds22, 
+                           FUN = function(x) c(mean = mean(x), sd = sd(x), n = length(x)))
+
+# Convert the resulting list into a data frame
+mean_sd_count22Nemo <- do.call(data.frame, mean_sd_count22Nemo)
+mean_sd_count22Nemo$mean <- mean_sd_count22Nemo$Total_SampleDW[, "mean"]
+mean_sd_count22Nemo$sd <- mean_sd_count22Nemo$Total_SampleDW[, "sd"]
+mean_sd_count22Nemo$n <- mean_sd_count22Nemo$Total_SampleDW[, "n"]
+
+# Calculate the standard error
+mean_sd_count22Nemo$se <- mean_sd_count22Nemo$Total_SampleDW.sd / sqrt(mean_sd_count22Nemo$Total_SampleDW.n)
+
+#match format to other DF
+names(mean_sd_count22Nemo)[names(mean_sd_count22Nemo) == 'Total_SampleDW.mean'] <- 'mean'
+mean_sd_count22Nemo <- mean_sd_count22Nemo[, c("Date", "mean", "se")]
+
+
+
+
+```
+
+```{r}
+SE <-  mean_sd_count22Nemo
+
+
+
+SE$Date <- as.Date(SE$Date , format = "%d-%b-%y")
+
+```
+
+```{r}
+# Assuming your dataset has 'Biomass_SD' for the standard deviation
+ggplot(SE, aes(x = `Date`, y = mean, )) + 
+  geom_bar(stat = "identity", position = "dodge") +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se),
+                position = position_dodge(width = 0.9),
+                width = 0.25) +  # Width of the error bars
+  labs(x = "Identity", y = "Biomass (mg)", 
+       title = "Average subsidy export by date (2022)",
+       fill = "Insect Type") +  # Set legend title
+
+  coord_cartesian(ylim = c(0, 350)) +  # Use coord_cartesian to set limits
+  theme_minimal()
+```
+
+
+
+#Testing GPT Code 
+```{r}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+# Sample Data
+df <- data.frame(
+  Date = as.Date(c('2022-09-05', '2022-08-09', '2022-07-12', '2022-08-21', '2022-07-21', '2022-09-25', '2022-07-27')),
+  mean = c(18.867340, 33.800685, 219.366861, 8.930537, 221.522613, 16.079160, 58.072560),
+  se = c(5.461858, 11.924404, 104.080135, 4.989005, 101.380112, 5.443214, 38.386060)
+)
+
+# Calculate the width for each bar and the center position
+df <- df %>%
+  arrange(Date) %>%
+  mutate(next_date = lead(Date, order_by = Date),
+         width = as.numeric(difftime(next_date, Date, units = "days")),
+         width = replace_na(width, 0),  # Replace NA with 0 for the last bar
+         center = Date + width / 2)    # Calculate the center of each bar
+
+# Create a data frame for plotting
+df_plot <- df %>%
+  mutate(xmin = Date,
+         xmax = Date + width,
+         ymin = 0,
+         ymax = mean)
+
+# Plot using ggplot2
+ggplot(df_plot) +
+  geom_rect(aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax), 
+            fill = 'blue', color = 'black') +
+  geom_errorbar(aes(x = center, ymin = mean - se, ymax = mean + se), 
+                width = 1, color = 'black') +  # Adjust width and color of error bars
+  labs(x = "Date (2022)", y = "Biomass (mg)", 
+       title = "Average subsidy export by date") +
+  coord_cartesian(ylim = c(0, 350)) +  # Use coord_cartesian to set limits
+  theme_minimal() +
+  scale_x_date(
+    breaks = df$Date,  # Set the x-axis breaks to the specific dates
+    labels = scales::date_format("%b %d")  # Format the date labels
+  )
+
+
+```
+
