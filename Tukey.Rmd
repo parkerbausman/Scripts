@@ -1,0 +1,153 @@
+---
+title: "Sig Bar"
+author: "Parker Bausman"
+date: "2024-08-20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggplot2)
+library(ggsignif)
+library(dplyr)
+library(multcompView)
+```
+
+
+### OK so this is putting some pieces together, this RMD should take raw data, aggregate, find standard error, perform a tukeyHSD, plot bars, and add letters for significance 
+
+#plot avgs per date with standard error 
+```{r}
+#This is where you change the year, choose floating202X
+Ponds <- subset(floating2022, Pond %in% c("1", "3", "5", "6","12","8","9"))
+
+#Separate nemo and other into their own DF 
+PondsNemo <- subset(Ponds, ID %in% c("Nemo"))
+#If using no dragon, change ponds to NoDragon202X in "PondsOther"
+PondsOther <- subset(Ponds, ID %in% c("Other"))
+
+#aggregate based on day by mean to get avg 
+PondsNemoAggregate <- aggregate(PondsNemo$Total_SampleDW ~ PondsNemo$Date, data = PondsNemo, FUN = mean)
+PondsOtherAggregate <- aggregate(PondsOther$Total_SampleDW ~ PondsOther$Date, data = PondsOther, FUN = mean)
+
+#need to rename col for succesful merge 
+names(PondsNemoAggregate)[names(PondsNemoAggregate) == 'PondsNemo$Date'] <- 'Date'
+names(PondsOtherAggregate)[names(PondsOtherAggregate) == 'PondsOther$Date'] <- 'Date'
+
+#merge
+AllPondBarChart <- left_join(PondsNemoAggregate, PondsOtherAggregate, by = "Date")
+
+#rename
+names(AllPondBarChart)[names(AllPondBarChart) == 'PondsNemo$Total_SampleDW'] <- 'NemoDry'
+names(AllPondBarChart)[names(AllPondBarChart) == 'PondsOther$Total_SampleDW'] <- 'NoNemoDry'
+```
+
+```{r}
+# Calculate the mean, standard deviation, and count for each Date
+NemoSE <- aggregate(Total_SampleDW ~ Date, data = PondsNemo, 
+                           FUN = function(x) c(mean = mean(x), sd = sd(x), n = length(x)))
+
+# Convert the resulting list into a data frame
+NemoSE <- do.call(data.frame, NemoSE)
+NemoSE$mean <- NemoSE$Total_SampleDW[, "mean"]
+NemoSE$sd <- NemoSE$Total_SampleDW[, "sd"]
+NemoSE$n <- NemoSE$Total_SampleDW[, "n"]
+
+# Calculate the standard error
+NemoSE$se <- NemoSE$Total_SampleDW.sd / sqrt(NemoSE$Total_SampleDW.n)
+
+#match format to other DF
+names(NemoSE)[names(NemoSE) == 'Total_SampleDW.mean'] <- 'mean'
+NemoSE <- NemoSE[, c("Date", "mean", "se")]
+NemoSE$Type <- "NemoDry"
+
+
+#GET SE FOR OTHER TOO 
+# Calculate the mean, standard deviation, and count for each Date
+OtherSE <- aggregate(Total_SampleDW ~ Date, data = PondsOther, 
+                           FUN = function(x) c(mean = mean(x), sd = sd(x), n = length(x)))
+
+# Convert the resulting list into a data frame
+OtherSE <- do.call(data.frame, OtherSE)
+OtherSE$mean <- OtherSE$Total_SampleDW[, "mean"]
+OtherSE$sd <- OtherSE$Total_SampleDW[, "sd"]
+OtherSE$n <- OtherSE$Total_SampleDW[, "n"]
+
+# Calculate the standard error
+OtherSE$se <- OtherSE$Total_SampleDW.sd / sqrt(OtherSE$Total_SampleDW.n)
+
+#match format to other DF
+names(OtherSE)[names(OtherSE) == 'Total_SampleDW.mean'] <- 'mean'
+OtherSE <- OtherSE[, c("Date", "mean", "se")]
+OtherSE$Type <- "NoNemoDry"
+
+```
+
+```{r}
+SE <- rbind(NemoSE, OtherSE )
+
+
+AllPondBarChart <- AllPondBarChart %>%
+  pivot_longer(cols = c(NoNemoDry, NemoDry),
+               names_to = "Type",
+               values_to = "Biomass")
+
+
+AllPondBarChart <- merge(AllPondBarChart, SE)
+
+AllPondBarChart$Date <- as.Date(AllPondBarChart$Date , format = "%d-%b-%y")
+
+#Make sure this date matches the year selected in the firt line 
+AllPondBarChart$Date <- gsub("2022-", "", AllPondBarChart$Date)
+
+#make sure date and type are factors 
+AllPondBarChart$Date <- as.factor(AllPondBarChart$Date)
+AllPondBarChart$Type <- as.factor(AllPondBarChart$Type)
+```
+
+```{r}
+# Assuming your dataset has 'Biomass_SD' for the standard deviation
+ggplot(AllPondBarChart, aes(x = `Date`, y = Biomass, fill = Type)) + 
+  geom_bar(stat = "identity", position = "dodge") +
+  geom_errorbar(aes(ymin = Biomass - se, ymax = Biomass + se),
+                position = position_dodge(width = 0.9),
+                width = 0.25) + 
+  #Change labs based on selection
+  labs(x = "Date 2022", y = "Biomass (mg)", title = "Average subsidy export of 7 sampled ponds in 2022 (1,3,5,6,8,9,12)") +
+  scale_fill_manual(values = c("NoNemoDry" = "red", "NemoDry" = "blue"),
+                    labels = c("N. hostilis", "Other insects")) +
+  #Change ylim to match 2022 max and keep scale for 2023 
+  ylim(0,500) +
+  theme_minimal()
+
+```
+
+#Now run AOV for tukeysHSD posthoc
+
+```{r}
+#to run you need to deconstruct the date and remove 2022, readd it later 
+floating2022NewDate <- floating2022
+floating2022NewDate$Date <- as.Date(floating2022NewDate$Date , format = "%d-%b-%y")
+floating2022NewDate$Date <- gsub("2022-", "", floating2022NewDate$Date)
+
+
+BarChartAOV <- aov(floating2022NewDate$Total_SampleDW ~ floating2022NewDate$ID * floating2022NewDate$Date + floating2022NewDate$Pond)
+tukey_result <- TukeyHSD(BarChartAOV)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+

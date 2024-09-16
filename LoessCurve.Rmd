@@ -1,0 +1,151 @@
+---
+title: "Scatterplot"
+author: "Parker Bausman"
+date: "2024-08-20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggplot2)
+library(ggbreak)
+```
+
+
+#lets make a scatter plot of emergence by sample from no dragon first 
+```{r}
+#This is where you change the year, choose floating202X
+Ponds <- subset(floating2022, Pond %in% c("1", "3", "5", "6","12","8","9"))
+
+#Separate nemo and other into their own DF 
+PondsNemo <- subset(Ponds, ID %in% c("Nemo"))
+#If using no dragon, change ponds to NoDragon202X in "PondsOther"
+PondsOther <- subset(Ponds, ID %in% c("Other"))
+
+Scatter <- rbind(PondsNemo, PondsOther)
+
+#remove 2022 
+Scatter$Date <- as.Date(Scatter$Date , format = "%d-%b-%y")
+
+Scatter$Date <- as.Date(Scatter$Date, format = "%Y-%m-%d")
+
+#remove pond and direction 
+Scatter <- Scatter[,-c(2,3)]
+
+
+#lets remove some of the end 2022 dates so that the date range is fairly similar 
+Scatter <- Scatter[!grepl("2022-08-21", Scatter$Date), ]
+Scatter <- Scatter[!grepl("2022-09-05", Scatter$Date), ]
+Scatter <- Scatter[!grepl("2022-09-25", Scatter$Date), ]
+```
+
+```{r}
+
+ggplot(Scatter, aes(x = Date, y = Total_SampleDW)) + 
+  geom_point(aes(color = ID), size = 2) +
+  geom_smooth(aes(color = "Overall Trend"), method = "loess", se = FALSE, linetype = "solid") +  # LOESS for all points
+  geom_smooth(data = subset(Scatter, ID == "Nemo"), aes(color = "Nemo"), method = "loess", se = FALSE) +  # LOESS for ID Nemo
+  geom_smooth(data = subset(Scatter, ID == "Other"), aes(color = "Other"), method = "loess", se = FALSE) +  # LOESS for ID Other
+  labs(x = "Date 2022", y = "Biomass (mg)", 
+       title = "Subsidy export by sample",
+       color = "ID") +  # Corrected the syntax for labs()
+  scale_y_break(c(1000, 2000), space = .01) +  # Apply y-axis break
+  theme_minimal()
+
+```
+
+```{r}
+Scatter <- Scatter %>%
+  mutate(Trend = case_when(
+    ID == "Nemo" ~ "Nemo",
+    ID == "Other" ~ "Other",
+    TRUE ~ "Overall Trend"
+  ))
+```
+
+
+```{r}
+# Create the plot with a y-axis break
+ggplot(Scatter, aes(x = Date, y = Total_SampleDW)) + 
+  geom_point(aes(color = ID), size = 1.5) +
+  scale_color_manual(values = c("Nemo" = "#619cFF", "Other" = "#f8766d", "Overall Trend" = "#")) +  # Custom colors
+  geom_smooth(aes(color = "Overall Trend"), method = "loess", se = FALSE, linetype = "solid", color = '#00BA38') +
+  geom_smooth(data = subset(Scatter, ID == "Nemo"), aes(color = "Nemo"), method = "loess", se = FALSE, color= '#619cFF') +
+  geom_smooth(data = subset(Scatter, ID == "Other"), aes(color = "Other"), method = "loess", se = FALSE, color = '#f8766d') +
+  labs(x = "Date", y = "Biomass (mg)", title = "Subsidy Export by Sample 2022 (No Dragonflies)", color = "ID") +
+  #scale_y_break(c(1000, 2000), space = .01) +  # Apply y-axis break
+  theme_minimal()
+```
+```{r}
+ggplot(Scatter, aes(x = Date, y = Total_SampleDW)) + 
+  geom_smooth(aes(color = "Overall Trend"), method = "loess", se = FALSE, linetype = "solid", color = '#00BA38') +  # LOESS for all points
+  geom_smooth(data = subset(Scatter, ID == "Nemo"), aes(color = "Nemo"), method = "loess", se = FALSE, color = '#619cFF') +  # LOESS for ID Nemo
+  geom_smooth(data = subset(Scatter, ID == "Other"), aes(color = "Other"), method = "loess", se = FALSE, color = '#f8766d') +  # LOESS for ID Other
+  labs(x = "Date", y = "Biomass (mg)", title = "Subsidy Export Trends by Sample 2022", color = "ID") +
+  theme_minimal()
+```
+
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+# Assuming Scatter is your data frame
+# Fit LOESS models for overall, Nemo, and Other
+
+# Fit LOESS for Overall Trend
+overall_loess <- loess(Total_SampleDW ~ as.numeric(Date), data = Scatter)
+
+# Fit LOESS for Nemo
+nemo_loess <- loess(Total_SampleDW ~ as.numeric(Date), data = subset(Scatter, ID == "Nemo"))
+
+# Fit LOESS for Other
+other_loess <- loess(Total_SampleDW ~ as.numeric(Date), data = subset(Scatter, ID == "Other"))
+
+# Create a function to find the peak
+find_peak <- function(loess_model, date_range) {
+  # Predict on a range of dates
+  pred <- predict(loess_model, newdata = as.numeric(date_range))
+  
+  # Find the index of the peak
+  peak_index <- which.max(pred)
+  
+  # Return the date and value of the peak
+  data.frame(Date = date_range[peak_index], PeakValue = pred[peak_index])
+}
+
+# Date range for prediction (assuming Date is a Date object or can be coerced to numeric)
+date_range <- seq(min(Scatter$Date), max(Scatter$Date), length.out = 100)
+
+# Find peaks
+overall_peak <- find_peak(overall_loess, date_range)
+nemo_peak <- find_peak(nemo_loess, date_range)
+other_peak <- find_peak(other_loess, date_range)
+
+# Combine the results
+peaks <- bind_rows(
+  mutate(overall_peak, ID = "Overall Trend"),
+  mutate(nemo_peak, ID = "Nemo"),
+  mutate(other_peak, ID = "Other")
+)
+
+print(peaks)
+
+```
+```{r}
+ggplot(Scatter, aes(x = Date, y = Total_SampleDW)) + 
+  geom_smooth(aes(color = "Overall Trend"), method = "loess", se = FALSE, linetype = "solid", color = '#00BA38') + 
+  geom_smooth(data = subset(Scatter, ID == "Nemo"), aes(color = "Nemo"), method = "loess", se = FALSE, color = '#619cFF') + 
+  geom_smooth(data = subset(Scatter, ID == "Other"), aes(color = "Other"), method = "loess", se = FALSE, color = '#f8766d') + 
+  geom_point(data = peaks, aes(x = Date, y = PeakValue), size = 2, shape = 21, fill = "black") +  # Add peaks
+  #geom_text(data = peaks, aes(x = Date, y = PeakValue, label = format(Date, "%m-%d")), vjust = -1, size = 3) +
+  labs(x = "Date", y = "Biomass (mg)", title = "Subsidy Export Trends (date constrained) by Sample 2022", color = "ID") +
+  theme_minimal()
+
+```
+
+

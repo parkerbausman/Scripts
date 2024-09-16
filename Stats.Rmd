@@ -157,9 +157,11 @@ NDNemoOther22 <- rbind(AllPonds22Nemo, NoDragon2022)
 NDmodel23 <- lm(NDNemoOther23$Total_SampleDW ~ NDNemoOther23$ID + NDNemoOther23$Date)
 summary(NDmodel23)
 ```
+
 ```{r}
 NDmodel22 <- lm(NDNemoOther22$Total_SampleDW ~ NDNemoOther22$ID + NDNemoOther22$Date)
 summary(NDmodel22)
 ```
+
 
 

@@ -1,0 +1,50 @@
+---
+title: "Untitled"
+author: "Parker Bausman"
+date: "2024-09-10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(nlme)
+
+```
+
+
+```{r}
+#without dragonflies 
+#feels like too much 
+NDNewModel231 <- lm(NoDragonFloat2023$Total_SampleDW ~ NoDragonFloat2023$ID * NoDragonFloat2023$Date * NoDragonFloat2023$Pond )
+anova(NDNewModel231)
+
+NDAOV231 <- aov(NoDragonFloat2023$Total_SampleDW ~ NoDragonFloat2023$ID * NoDragonFloat2023$Date * NoDragonFloat2023$Pond)
+TukeyHSD(NDAOV231)
+```
+
+```{r}
+#without dragonflies 
+#this feels right 
+NDNewModel23 <- lm(NoDragonFloat2023$Total_SampleDW ~ NoDragonFloat2023$ID * NoDragonFloat2023$Date + NoDragonFloat2023$Pond)
+anova(NDNewModel23)
+
+NDAOV23 <- aov(NoDragonFloat2023$Total_SampleDW ~ NoDragonFloat2023$ID * NoDragonFloat2023$Date + NoDragonFloat2023$Pond)
+TukeyHSD(NDAOV23)
+```
+
+```{r}
+#so for GLS date needs to be numeric so its days from x date (I forget the actual date)
+#Also, I need to aggregate by date and ID. I don't see this as a problem 
+FloatOther <- FloatOther %>%
+  group_by( Date, Pond, Direction) %>%
+  summarize(Total_SampleDW = sum(SampleDW))
+
+
+model <- gls(Total_SampleDW ~ ID * Date , 
+             data = ACFloating2022, 
+             correlation = corAR1(form = ~ Date | ID))
+```
+

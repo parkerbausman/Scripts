@@ -1,6 +1,6 @@
 This is a collection of scripts used during my masters thesis. Some are old and poorly organized. For questions about the research or proper workflow email parker.bausman@maine.edu
 
-WHEN LOOKING AT MG/M2 PER DAY, 202X-Nemo-Other-M2 is the correct data
+A lot has changed and there is a LOT of outdated stuff in this pipeline. At the moment ACFloating(ND or not) and floating20xx are the best and synchronous datasets 
 
 - Raw data is input into "Float combine" where my two datasets are merged
     - UNKxxx are given random numbers to make sure there are no duplicate measures per pond 

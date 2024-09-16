@@ -9,20 +9,169 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
-#with dragonflies 
-NewModel22 <- lm(floating2022$Total_SampleDW ~ floating2022$ID * floating2022$Date * floating2022$Pond)
-anova(NewModel22)
 
-AOV22 <- aov(floating2022$Total_SampleDW ~ floating2022$ID * floating2022$Date * floating2022$Pond)
-TukeyHSD(AOV22)
+```{r}
+library(nlme)
+library(tidyverse)
+library(lubridate)
+```
+
+
+```{r}
+#without dragonflies 
+#feels like too much 
+NDNewModel231 <- lm(NoDragonFloat2023$Total_SampleDW ~ NoDragonFloat2023$ID * NoDragonFloat2023$Date * NoDragonFloat2023$Pond )
+anova(NDNewModel231)
+
+NDAOV231 <- aov(NoDragonFloat2023$Total_SampleDW ~ NoDragonFloat2023$ID * NoDragonFloat2023$Date * NoDragonFloat2023$Pond)
+TukeyHSD(NDAOV231)
 ```
 
 ```{r}
-#with dragonflies 
-NewModel22 <- lm(floating2022$Total_SampleDW ~ floating2022$ID * floating2022$Date + floating2022$Pond)
-anova(NewModel22)
+#without dragonflies 
+#this feels right 
+NDNewModel23 <- lm(NoDragonFloat2023$Total_SampleDW ~ NoDragonFloat2023$ID * NoDragonFloat2023$Date + NoDragonFloat2023$Pond)
+anova(NDNewModel23)
 
-AOV22 <- aov(floating2022$Total_SampleDW ~ floating2022$ID * floating2022$Date + floating2022$Pond)
-TukeyHSD(AOV22)
+NDAOV23 <- aov(NoDragonFloat2023$Total_SampleDW ~ NoDragonFloat2023$ID * NoDragonFloat2023$Date + NoDragonFloat2023$Pond)
+TukeyHSD(NDAOV23)
 ```
+
+```{r}
+###Temporal autocorrelation 
+
+#it seems for autocorrelation dates need to be numeric so lets make a new DS 
+
+ACFloating2022 <- floating2022
+
+
+ACFloating2022$Date <- as.Date(ACFloating2022$Date, format="%d-%b-%y")
+
+ACFloating2022$Date <- as.numeric(ACFloating2022$Date)
+
+
+ACFloating2022 <- ACFloating2022 %>%
+  group_by( Date, ID, Pond) %>%
+  summarize(Total_SampleDW = sum(Total_SampleDW))
+```
+
+```{r}
+###Temporal autocorrelation 
+
+#it seems for autocorrelation dates need to be numeric so lets make a new DS 
+
+ACFloating2023 <- floating2023
+
+ACFloating2023$Date <- as.Date(ACFloating2023$Date, format="%d-%b-%y")
+
+ACFloating2023$Date <- as.numeric(ACFloating2023$Date)
+
+
+ACFloating2023 <- ACFloating2023 %>%
+  group_by( Date, ID, Pond) %>%
+  summarize(Total_SampleDW = sum(Total_SampleDW))
+```
+
+
+
+```{r}
+
+model1<-lme(Total_SampleDW ~ ID, random=~ Date|Pond, data = ACFloating2022)
+anova(model1)
+
+# best model 
+model2<-lme(Total_SampleDW ~ ID+Date ,random=~1| Pond, data = ACFloating2022)
+anova(model2)
+
+model5<-lme(Total_SampleDW ~ ID+Date,random=~1| Pond, corr=corAR1(, form= ~ 1 |Pond), data = ACFloating2022)
+anova(model5)
+
+
+anova(model1,model2,model5)
+
+plot(ACF(model2, maxLag=10, resType = "n"),alpha=0.01)
+AIC(model1, model2, model5)
+
+
+```
+
+
+
+```{r}
+model3<-lme(Total_SampleDW ~ ID, random=~ Date|Pond, data = ACFloating2023)
+anova(model3)
+
+#best model
+model4<-lme(Total_SampleDW ~ ID+Date ,random=~1| Pond, data = ACFloating2023)
+anova(model4)
+
+model6<-lme(Total_SampleDW ~ ID+Date,random=~1| Pond, corr=corAR1(, form= ~ 1 |Pond), data = ACFloating2023)
+anova(model6)
+
+
+anova(model3,model4,model6)
+
+plot(ACF(model4, maxLag=10, resType = "n"),alpha=0.01)
+AIC(model3, model4, model6)
+
+
+```
+
+#I should recalculate the surface area of the traps to get mg/m2 from the DW 
+each trap covers 0.1179869 m2 
+
+```{r}
+
+library(emmeans)
+
+# Obtain estimated marginal means
+emmeans_results22 <- emmeans(model2, ~ ID)
+# Obtain estimated marginal means
+emmeans_results23 <- emmeans(model4, ~ ID)
+
+# Perform pairwise comparisons
+pairs(emmeans_results22)
+pairs(emmeans_results23)
+```
+
+```{r}
+# Plot estimated marginal means for ID
+library(ggplot2)
+plot(emmeans_results23) + theme_minimal()
+
+```
+
+```{r}
+ACFloating2023ND <- NDfloating2023
+
+ACFloating2023ND$Date <- as.Date(ACFloating2023ND$Date, format="%d-%b-%y")
+
+ACFloating2023ND$Date <- as.numeric(ACFloating2023ND$Date)
+
+
+ACFloating2023ND <- ACFloating2023ND %>%
+  group_by( Date, ID, Pond) %>%
+  summarize(Total_SampleDW = sum(Total_SampleDW))
+```
+```{r}
+ACFloating2022ND <- NDfloating2022
+
+ACFloating2022ND$Date <- as.Date(ACFloating2022ND$Date, format="%d-%b-%y")
+
+ACFloating2022ND$Date <- as.numeric(ACFloating2022ND$Date)
+
+
+ACFloating2022ND <- ACFloating2022ND %>%
+  group_by( Date, ID, Pond) %>%
+  summarize(Total_SampleDW = sum(Total_SampleDW))
+```
+```{r}
+#best model
+model8<-lme(Total_SampleDW ~ ID+Date ,random=~1| Pond, data = ACFloating2022ND)
+anova(model8)
+
+#best model
+model9<-lme(Total_SampleDW ~ ID+Date ,random=~1| Pond, data = ACFloating2023ND)
+anova(model9)
+```
+

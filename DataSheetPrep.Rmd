@@ -82,11 +82,6 @@ FloatOther <- FloatOther %>%
 ```
 
 
-
-
-
-### FLOAT OTHER IS PRODUCING NAs ??? 
-
 ```{r}
 #add nemo non nemo col to each
 FloatNemo$ID <- "Nemo"
@@ -107,4 +102,72 @@ floating2023 <- FloatAll[!grepl("22", FloatAll$Date), ]
 floating2022 <- FloatAll[!grepl("23", FloatAll$Date), ]
 ```
 
+```{r}
+floating2022$Pond <- gsub("MC Pond ", "", floating2022$Pond)
+floating2023$Pond <- gsub("MC Pond ", "", floating2023$Pond)
+floating2022$Pond <- gsub("c", "", floating2022$Pond)
+floating2023$Pond <- gsub("c Pond ", "", floating2023$Pond)
+floating2022$Pond <- gsub("a", "", floating2022$Pond)
+floating2023$Pond <- gsub("a Pond ", "", floating2023$Pond)
+floating2022$Pond <- gsub("b", "", floating2022$Pond)
+floating2023$Pond <- gsub("b Pond ", "", floating2023$Pond)
+```
+
+
+##### MAKE ONE WITH NO DRAGONFLIES FOR REAL 
+
+```{r}
+#Separate by nemo or no nemo 
+NDFloatNemo <- subset(Float, ID %in% c("hostilis"))
+#removed antisoptera
+NDFloatOther <- subset(Float, ID %in% c( "Zygoptera", "nigriculus",  "Midges","Ceratopogonidae","Diptera", "Mosquito", "externus"))
+```
+
+```{r}
+#summarize by sample
+NDFloatNemo <- NDFloatNemo %>%
+  group_by( Date, Pond, Direction) %>%
+  summarize(Total_SampleDW = sum(SampleDW))
+```
+```{r}
+#summarize by sample
+NDFloatOther <- NDFloatOther %>%
+  group_by( Date, Pond) %>%
+  summarize(Total_SampleDW = sum(SampleDW))
+```
+
+```{r}
+#add nemo non nemo col to each
+NDFloatNemo$ID <- "Nemo"
+NDFloatOther$ID <- "Other"
+
+```
+
+```{r}
+NDFloatAll <- rbind(NDFloatNemo, NDFloatOther)
+
+NDFloatAll$Date <- as.factor(NDFloatAll$Date)
+```
+
+
+```{r}
+#now separate 2022 and 2023 to see if different 
+NDfloating2023 <- FloatAll[!grepl("22", FloatAll$Date), ]
+NDfloating2022 <- FloatAll[!grepl("23", FloatAll$Date), ]
+```
+
+#need to remove (MC POND)
+
+```{r}
+NDfloating2022$Pond <- gsub("MC Pond ", "", NDfloating2022$Pond)
+NDfloating2023$Pond <- gsub("MC Pond ", "", NDfloating2023$Pond)
+NDfloating2022$Pond <- gsub("c", "", NDfloating2022$Pond)
+NDfloating2023$Pond <- gsub("c Pond ", "", NDfloating2023$Pond)
+NDfloating2022$Pond <- gsub("a", "", NDfloating2022$Pond)
+NDfloating2023$Pond <- gsub("a Pond ", "", NDfloating2023$Pond)
+NDfloating2022$Pond <- gsub("b", "", NDfloating2022$Pond)
+NDfloating2023$Pond <- gsub("b Pond ", "", NDfloating2023$Pond)
+```
+
+#MAKE SURE TO USE THIS WHEN GRAPHING 
 

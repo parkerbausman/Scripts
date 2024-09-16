@@ -9,6 +9,8 @@ output: html_document
 
 ```{r}
 NoDragon <- subset(Float, ID %in% c( "Zygoptera", "nigriculus",  "Midges","Ceratopogonidae","Diptera", "Mosquito", "externus"))
+
+
 ```
 
 #ND prefix for No Dragonflies :) 
@@ -16,7 +18,7 @@ NoDragon <- subset(Float, ID %in% c( "Zygoptera", "nigriculus",  "Midges","Cerat
 ```{r}
 #summarize by sample
 NoDragon <- NoDragon %>%
-  group_by( Date, Pond, Direction) %>%
+  group_by( Date, Pond) %>%
   summarize(Total_SampleDW = sum(SampleDW))
 ```
 
@@ -38,5 +40,10 @@ NoDragon2023 <- NoDragon[!grepl("22", NoDragon$Date), ]
 NoDragon2022 <- NoDragon[!grepl("23", NoDragon$Date), ]
 ```
 
+```{r}
+#modeling dataset 
+ACFloating2023ND <- NoDragon2023
+ACFloating2023ND <- NoDragon2023
+```
 
 
